@@ -1,0 +1,143 @@
+@startuml
+skinparam linetype ortho
+
+|Guest|
+start
+:Open platform;
+if (Has account?) then (no)
+  :Sign up;
+  |Auth API|
+  :Create user + referral linkage;
+  |Guest|
+else (yes)
+endif
+:Log in;
+|Auth API|
+:Validate credentials and blacklist/deleted checks;
+:Issue JWT;
+|User|
+
+:Search and filter vehicles;
+|Vehicle API|
+:Query active listings with geo + availability filters;
+|User|
+:View vehicle details;
+|Vehicle API|
+:Load booked ranges;
+:Track recently viewed;
+|User|
+
+if (Save search?) then (yes)
+  |Search API|
+  :Store saved search (trim to latest 10);
+  |User|
+endif
+
+:Create booking request;
+|Booking API|
+:Check idempotency key;
+if (Duplicate request?) then (yes)
+  :Return existing booking;
+  |User|
+  end
+else (no)
+endif
+
+:Validate vehicle, dates, blacklist, overlaps, availability blocks;
+:Apply first-time discount if eligible;
+if (Coupon provided?) then (yes)
+  |Coupon API|
+  :Validate coupon constraints;
+  |Booking API|
+  :Apply coupon discount;
+endif
+:Create booking as HELD (auto) or PENDING (manual);
+:Notify owner;
+|User|
+
+:Proceed to payment;
+|Payment API|
+:Create payment transaction;
+if (Payment success?) then (yes)
+  :Update booking -> CONFIRMED;
+else (no)
+  :Update booking -> CANCELLED;
+  |User|
+  :Show failure result;
+  end
+endif
+
+|User|
+if (Trip started?) then (yes)
+  |Trip Report API|
+  :Create pre-trip report;
+  :Attach photos if uploaded;
+endif
+
+|Owner|
+if (Late return?) then (yes)
+  |Booking API|
+  :Calculate late fee;
+  :Update booking -> COMPLETED with late fee;
+endif
+
+|Owner|
+:Create post-trip report;
+|Trip Report API|
+:Store extra charges and end report linkage;
+
+|User|
+if (Any issue?) then (yes)
+  :Open dispute;
+  |Booking API|
+  :Set status -> DISPUTED;
+  |Admin|
+  :Review and resolve dispute;
+  |Booking API|
+  if (Resolution = refund?) then (yes)
+    :Set status -> REFUNDED;
+  else (no)
+    :Set status -> COMPLETED;
+  endif
+endif
+
+|User|
+:Submit review for completed/archived booking;
+|Review API|
+:Persist review;
+
+fork
+  |System Scheduler|
+  :Run periodic background tasks;
+  |Background Tasks|
+  :Expire held bookings past hold TTL;
+  :Move confirmed -> active at startDate;
+  :Move active -> completed at endDate;
+  :Archive old completed/cancelled/refunded bookings;
+fork again
+  |User/Owner|
+  :Submit verification request;
+  |Verification API|
+  :Create pending verification;
+  |User/Owner|
+  :Upload supporting documents;
+  |Verification API|
+  :Set status -> submitted;
+  |Admin|
+  :Review verification decision;
+  |Verification API|
+  if (Approved?) then (yes)
+    :Update user/owner/vehicle verification flags;
+  else (no)
+    :Store rejection notes;
+  endif
+fork again
+  |Admin|
+  :Run analytics and operational controls;
+  :Manage vehicles/users/bookings/coupons/payments;
+  :Manage announcements and inspect audit/config;
+end fork
+
+|User|
+stop
+@enduml

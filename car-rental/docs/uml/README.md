@@ -4,6 +4,8 @@ This folder contains the project UML sources:
 
 - `class-diagram.puml`
 - `use-case-diagram.puml`
+- `sequence-diagram.puml`
+- `activity-diagram.puml`
 
 ## Render options
 
@@ -11,7 +13,7 @@ This folder contains the project UML sources:
 2. PlantUML CLI:
 
 ```bash
-plantuml -tsvg class-diagram.puml use-case-diagram.puml
+plantuml -tsvg class-diagram.puml use-case-diagram.puml sequence-diagram.puml activity-diagram.puml
 ```
 
 This generates crisp, scalable SVG outputs next to each source file.
@@ -19,5 +21,5 @@ This generates crisp, scalable SVG outputs next to each source file.
 For high-resolution PNG output, add `skinparam dpi 300` near the top of each `.puml` file and run:
 
 ```bash
-plantuml -tpng class-diagram.puml use-case-diagram.puml
+plantuml -tpng class-diagram.puml use-case-diagram.puml sequence-diagram.puml activity-diagram.puml
 ```

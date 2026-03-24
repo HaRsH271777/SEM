@@ -1,0 +1,193 @@
+@startuml
+!pragma teoz true
+hide footbox
+autonumber
+skinparam linetype ortho
+
+actor Guest
+actor User
+actor Owner
+actor Admin
+participant "Frontend (React)" as FE
+participant "Auth API" as AUTH
+participant "Vehicle API" as VEH
+participant "Search API" as SEARCH
+participant "Booking API" as BOOK
+participant "Coupon API" as COUP
+participant "Payment API" as PAY
+participant "Trip Report API" as TRIP
+participant "Review API" as REV
+participant "Notification API" as NOTI
+database "MongoDB" as DB
+
+== Account & Discovery ==
+Guest -> FE: Sign up / Login request
+FE -> AUTH: POST /api/auth/signup or /login
+AUTH -> DB: users/referrals read-write
+AUTH --> FE: accessToken + user profile
+
+User -> FE: Search vehicles with filters
+FE -> VEH: GET /api/vehicles
+VEH -> DB: vehicles + bookings query
+VEH --> FE: Paginated active vehicles
+
+User -> FE: Open vehicle details
+FE -> VEH: GET /api/vehicles/{vehicleId}
+VEH -> DB: vehicle + booked ranges
+VEH -> DB: upsert recently_viewed
+VEH --> FE: Vehicle details + bookedRanges
+
+opt Save search
+  User -> FE: Save search filter set
+  FE -> SEARCH: POST /api/search/saved
+  SEARCH -> DB: saved_searches insert (max 10 policy)
+  SEARCH --> FE: Saved search item
+end
+
+== Booking Creation ==
+User -> FE: Create booking (dates, coupon, payment method)
+opt Coupon pre-check
+  FE -> COUP: POST /api/coupons/validate
+  COUP -> DB: coupons + bookings read
+  COUP --> FE: coupon validity + computed discount
+end
+
+FE -> BOOK: POST /api/bookings
+BOOK -> DB: user blacklist check
+BOOK -> DB: idempotency key lookup
+BOOK -> DB: vehicle availability + overlap check
+BOOK -> DB: coupon constraints + usage check
+BOOK -> DB: bookings insert (held or pending)
+BOOK -> DB: coupons usedCount increment
+BOOK -> DB: vehicles totalBookings increment
+BOOK -> DB: notifications insert (owner)
+BOOK --> FE: Booking + nextSteps
+
+== Payment & Confirmation ==
+User -> FE: Pay booking
+FE -> PAY: POST /api/payments/charge
+PAY -> DB: booking read
+PAY -> DB: payment insert
+alt Payment succeeded
+  PAY -> DB: booking status -> confirmed
+else Payment failed
+  PAY -> DB: booking status -> cancelled
+end
+PAY --> FE: payment result
+
+opt Explicit confirm call by owner/user/admin
+  FE -> BOOK: POST /api/bookings/{id}/confirm
+  BOOK -> DB: booking read + hold expiry check
+  BOOK -> DB: overlap re-check
+  BOOK -> DB: booking status -> confirmed/active
+  BOOK -> DB: notifications insert (user)
+  BOOK --> FE: Updated booking
+end
+
+== Trip Closure ==
+Owner -> FE: Submit pre-trip report
+FE -> TRIP: POST /api/trip-reports (pre_trip)
+TRIP -> DB: booking authorization + duplicate check
+TRIP -> DB: trip_reports insert
+TRIP -> DB: booking.tripStartReportId set
+TRIP --> FE: Pre-trip report
+
+Owner -> FE: Submit post-trip report
+FE -> TRIP: POST /api/trip-reports (post_trip)
+TRIP -> DB: booking authorization + duplicate check
+TRIP -> DB: trip_reports insert
+TRIP -> DB: booking.tripEndReportId set + extra charges
+TRIP --> FE: Post-trip report
+
+User -> FE: Submit review
+FE -> REV: POST /api/reviews
+REV -> DB: booking completion + ownership check
+REV -> DB: reviews insert
+REV --> FE: Review created
+
+actor "System Scheduler" as SYS
+participant "Background Tasks" as TASKS
+participant "Verification API" as VER
+participant "Announcement API" as ANN
+participant "Admin API" as ADM
+
+== Background Automation ==
+SYS -> TASKS: run every minute
+TASKS -> DB: expire held bookings past holdExpiresAt
+TASKS -> DB: activate confirmed bookings at startDate
+TASKS -> DB: complete active bookings at endDate
+TASKS -> DB: archive old completed/cancelled/refunded
+TASKS -> DB: notification insert for hold expiry
+
+== Cancellation, Dispute, Refund ==
+User -> FE: Cancel booking
+FE -> BOOK: POST /api/bookings/{id}/cancel
+BOOK -> DB: booking status validation
+BOOK -> DB: refund calculation by policy
+BOOK -> DB: booking status -> cancelled + refundAmount
+BOOK -> DB: counterpart notification insert
+BOOK --> FE: Cancelled booking + refund
+
+User -> FE: Open dispute
+FE -> BOOK: POST /api/bookings/{id}/dispute
+BOOK -> DB: booking status -> disputed
+BOOK --> FE: Dispute opened
+
+Admin -> FE: Resolve dispute
+FE -> BOOK: POST /api/bookings/{id}/resolve
+BOOK -> DB: disputed validation + resolution
+alt resolution=refund
+  BOOK -> DB: booking status -> refunded
+else resolution=no_refund
+  BOOK -> DB: booking status -> completed
+end
+BOOK -> DB: user notification insert
+BOOK --> FE: Resolved booking
+
+Admin -> FE: Process payment refund
+FE -> PAY: POST /api/payments/refund
+PAY -> DB: successful payment lookup
+PAY -> DB: refund payment insert + original status update
+PAY -> DB: booking status -> refunded
+PAY --> FE: Refund transaction
+
+== Trust & Safety ==
+User -> FE: Submit verification request
+FE -> VER: POST /api/verifications
+VER -> DB: duplicate pending/submitted check
+VER -> DB: verification insert (pending)
+VER --> FE: Verification record
+
+User -> FE: Upload verification documents
+FE -> VER: POST /api/verifications/{id}/documents
+VER -> DB: ownership check + status -> submitted + urls
+VER --> FE: Uploaded document urls
+
+Admin -> FE: Review verification
+FE -> VER: POST /api/verifications/{id}/review
+VER -> DB: status -> approved/rejected + audit fields
+opt approved and type-specific effect
+  VER -> DB: users.isVerified/ownerVerified update
+  VER -> DB: vehicles.insuranceVerified update
+end
+VER --> FE: Review outcome
+
+== Announcements & Notifications ==
+Admin -> FE: Create announcement
+FE -> ANN: POST /api/announcements?broadcast=true
+ANN -> DB: announcements insert
+ANN -> DB: users target set query
+ANN -> DB: notifications bulk insert
+ANN --> FE: Announcement created
+
+User -> FE: Open notifications center
+FE -> NOTI: GET /api/notifications
+NOTI -> DB: notifications query + unread count
+NOTI --> FE: Notifications page data
+
+User -> FE: Mark notifications read
+FE -> NOTI: POST /api/notifications/mark-read
+NOTI -> DB: update notifications read=true
+NOTI --> FE: modified count
+
+@enduml

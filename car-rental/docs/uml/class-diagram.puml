@@ -1,4 +1,4 @@
-java -jar C:\plantuml\plantuml-1.2026.2.jar -tsvg class-diagram.puml use-case-diagram.puml@startuml
+@startuml
 left to right direction
 skinparam linetype ortho
 skinparam classAttributeIconSize 0
