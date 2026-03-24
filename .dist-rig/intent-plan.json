@@ -1,0 +1,106 @@
+{
+  "intent": "Refactor safely using repository intelligence and agent verification",
+  "constraints": [],
+  "subtasks": [
+    {
+      "id": "T1",
+      "title": "Map current structure of 'refactor repository intelligence'",
+      "description": "Use RIG to produce the current dependency tree and identify smell patterns.",
+      "impacted_hints": [
+        "Verification",
+        "VerificationStatus",
+        "VerificationType",
+        "car-rental.backend.app.models.VerificationCreateRequest",
+        "car-rental.backend.app.models.VerificationOut",
+        "car-rental.backend.app.models.VerificationStatus",
+        "car-rental.backend.app.routes.verifications",
+        "car-rental.backend.app.routes.verifications.get_my_verifications"
+      ],
+      "agent_role": "decomposer",
+      "acceptance_criteria": [
+        "Current structure is documented",
+        "Smells (high fan-in, cycles) are listed"
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "Design target structure",
+      "description": "Define the desired module layout and public contracts after refactoring.",
+      "impacted_hints": [
+        "Verification",
+        "VerificationStatus",
+        "VerificationType",
+        "car-rental.backend.app.models.VerificationCreateRequest",
+        "car-rental.backend.app.models.VerificationOut",
+        "car-rental.backend.app.models.VerificationStatus",
+        "car-rental.backend.app.routes.verifications",
+        "car-rental.backend.app.routes.verifications.get_my_verifications"
+      ],
+      "agent_role": "generator",
+      "acceptance_criteria": [
+        "Target structure is documented",
+        "Breaking changes are noted"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Apply structural refactor",
+      "description": "Move, split, or merge modules per the design; update all imports.",
+      "impacted_hints": [
+        "Verification",
+        "VerificationStatus",
+        "VerificationType",
+        "car-rental.backend.app.models.VerificationCreateRequest",
+        "car-rental.backend.app.models.VerificationOut",
+        "car-rental.backend.app.models.VerificationStatus",
+        "car-rental.backend.app.routes.verifications",
+        "car-rental.backend.app.routes.verifications.get_my_verifications"
+      ],
+      "agent_role": "generator",
+      "acceptance_criteria": [
+        "New structure matches design",
+        "All imports resolve"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Update tests to match new structure",
+      "description": "Move or rewrite test files to target the new module paths.",
+      "impacted_hints": [
+        "Verification",
+        "VerificationStatus",
+        "VerificationType",
+        "car-rental.backend.app.models.VerificationCreateRequest",
+        "car-rental.backend.app.models.VerificationOut",
+        "car-rental.backend.app.models.VerificationStatus",
+        "car-rental.backend.app.routes.verifications",
+        "car-rental.backend.app.routes.verifications.get_my_verifications"
+      ],
+      "agent_role": "critic",
+      "acceptance_criteria": [
+        "Tests pass with new paths",
+        "No orphan tests"
+      ]
+    },
+    {
+      "id": "T5",
+      "title": "Verify and harden",
+      "description": "Full static + test pass; fix any newly exposed issues.",
+      "impacted_hints": [
+        "Verification",
+        "VerificationStatus",
+        "VerificationType",
+        "car-rental.backend.app.models.VerificationCreateRequest",
+        "car-rental.backend.app.models.VerificationOut",
+        "car-rental.backend.app.models.VerificationStatus",
+        "car-rental.backend.app.routes.verifications",
+        "car-rental.backend.app.routes.verifications.get_my_verifications"
+      ],
+      "agent_role": "repair",
+      "acceptance_criteria": [
+        "Verification passes",
+        "Cyclomatic complexity unchanged or reduced"
+      ]
+    }
+  ]
+}

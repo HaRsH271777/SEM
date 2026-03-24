@@ -1,0 +1,266 @@
+@startuml
+left to right direction
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam ranksep 90
+skinparam nodesep 50
+
+actor Guest
+actor "Authenticated User" as AuthUser
+actor User
+actor Owner
+actor Admin
+actor "System Scheduler" as System
+
+AuthUser <|-- User
+AuthUser <|-- Owner
+AuthUser <|-- Admin
+
+rectangle "DriveX Car Rental Platform" {
+
+  package "Authentication & Profile" as PAuth {
+    usecase "Sign Up" as UC_SignUp
+    usecase "Log In" as UC_Login
+    usecase "Log Out" as UC_Logout
+    usecase "Change Password" as UC_ChangePassword
+    usecase "View Profile" as UC_ViewProfile
+    usecase "Update Profile" as UC_UpdateProfile
+    usecase "View Referral Stats" as UC_Referral
+  }
+
+  package "Vehicle Discovery" as PDiscovery {
+    usecase "Search/Filter/Sort Vehicles" as UC_SearchVehicles
+    usecase "View Vehicle Details" as UC_ViewVehicle
+    usecase "View Booked Ranges" as UC_BookedRanges
+    usecase "Save Search" as UC_SaveSearch
+    usecase "List Saved Searches" as UC_ListSaved
+    usecase "Delete Saved Search" as UC_DeleteSaved
+    usecase "Track Recently Viewed" as UC_TrackRecent
+    usecase "List Recently Viewed" as UC_ListRecent
+    usecase "View Vehicle Reviews" as UC_VehicleReviews
+  }
+
+  package "Vehicle Management (Owner/Admin)" as PVehicleMgmt {
+    usecase "Create Vehicle" as UC_CreateVehicle
+    usecase "Update Vehicle" as UC_UpdateVehicle
+    usecase "Remove Vehicle" as UC_DeleteVehicle
+    usecase "Upload Vehicle Images" as UC_UploadVehicleImages
+  }
+
+  package "Booking Lifecycle" as PBooking {
+    usecase "Create Booking" as UC_CreateBooking
+    usecase "Check Availability" as UC_CheckAvailability
+    usecase "Apply First-Time Discount" as UC_FirstTimeDiscount
+    usecase "Apply Coupon" as UC_ApplyCoupon
+    usecase "List Bookings" as UC_ListBookings
+    usecase "Get Booking Details" as UC_GetBooking
+    usecase "Confirm Booking" as UC_ConfirmBooking
+    usecase "Cancel Booking" as UC_CancelBooking
+    usecase "Report Late Return" as UC_LateReturn
+    usecase "Open Dispute" as UC_OpenDispute
+    usecase "Resolve Dispute" as UC_ResolveDispute
+  }
+
+  package "Payments" as PPayments {
+    usecase "Charge Payment" as UC_Charge
+    usecase "Refund Payment" as UC_Refund
+    usecase "List Booking Payments" as UC_ListPayments
+  }
+
+  package "Trip Workflow" as PTrip {
+    usecase "Get Checklist Template" as UC_GetChecklist
+    usecase "Create Trip Report" as UC_CreateTripReport
+    usecase "Upload Trip Photos" as UC_UploadTripPhotos
+    usecase "View Booking Trip Reports" as UC_ViewTripReports
+    usecase "View Trip Report" as UC_ViewTripReport
+  }
+
+  package "Trust & Safety" as PTrust {
+    usecase "Submit Verification" as UC_SubmitVerification
+    usecase "Upload Verification Documents" as UC_UploadVerificationDocs
+    usecase "View My Verifications" as UC_MyVerifications
+    usecase "List Verification Requests" as UC_ListVerifications
+    usecase "Review Verification" as UC_ReviewVerification
+    usecase "Create Review" as UC_CreateReview
+  }
+
+  package "Notifications & Announcements" as PNotify {
+    usecase "List Notifications" as UC_ListNotifications
+    usecase "Mark Notifications Read" as UC_MarkRead
+    usecase "Create Announcement" as UC_CreateAnnouncement
+    usecase "Broadcast Announcement" as UC_BroadcastAnnouncement
+    usecase "List Announcements" as UC_ListAnnouncements
+    usecase "Delete Announcement" as UC_DeleteAnnouncement
+  }
+
+  package "Coupon Operations" as PCoupon {
+    usecase "Create Coupon" as UC_CreateCoupon
+    usecase "List Coupons" as UC_ListCoupons
+    usecase "Validate Coupon" as UC_ValidateCoupon
+    usecase "Toggle Coupon" as UC_ToggleCoupon
+    usecase "Delete Coupon" as UC_DeleteCoupon
+  }
+
+  package "Admin Operations" as PAdmin {
+    usecase "View Platform Analytics" as UC_Analytics
+    usecase "View Owner Analytics" as UC_OwnerAnalytics
+    usecase "List Admin Bookings" as UC_AdminBookings
+    usecase "Create Booking as Admin" as UC_AdminCreateBooking
+    usecase "Cancel Booking as Admin" as UC_AdminCancelBooking
+    usecase "Bulk Cancel Bookings" as UC_BulkCancelBookings
+    usecase "Export Bookings CSV" as UC_ExportBookings
+    usecase "List Admin Vehicles" as UC_AdminVehicles
+    usecase "Approve Vehicle" as UC_ApproveVehicle
+    usecase "Reject Vehicle" as UC_RejectVehicle
+    usecase "Bulk Approve Vehicles" as UC_BulkApproveVehicles
+    usecase "Admin Update Vehicle" as UC_AdminUpdateVehicle
+    usecase "Admin Delete Vehicle" as UC_AdminDeleteVehicle
+    usecase "List Users" as UC_ListUsers
+    usecase "Create User" as UC_CreateUser
+    usecase "Update User" as UC_UpdateUser
+    usecase "Deactivate User" as UC_DeactivateUser
+    usecase "Blacklist User" as UC_BlacklistUser
+    usecase "Unblacklist User" as UC_UnblacklistUser
+    usecase "List Blacklist" as UC_ListBlacklist
+    usecase "View Audit Logs" as UC_AuditLogs
+    usecase "Get Config" as UC_GetConfig
+    usecase "Update Config" as UC_UpdateConfig
+    usecase "List Payments" as UC_AdminListPayments
+    usecase "Refund via Admin" as UC_AdminRefund
+    usecase "List Disputes" as UC_ListDisputes
+  }
+
+  package "Background Automation" as PAutomation {
+    usecase "Expire Holds" as UC_ExpireHolds
+    usecase "Activate Bookings" as UC_ActivateBookings
+    usecase "Complete Bookings" as UC_CompleteBookings
+    usecase "Archive Old Bookings" as UC_ArchiveBookings
+  }
+
+  PAuth -[hidden]-> PDiscovery
+  PDiscovery -[hidden]-> PVehicleMgmt
+  PVehicleMgmt -[hidden]-> PBooking
+  PBooking -[hidden]-> PPayments
+  PPayments -[hidden]-> PTrip
+  PTrip -[hidden]-> PTrust
+  PTrust -[hidden]-> PNotify
+  PNotify -[hidden]-> PCoupon
+  PCoupon -[hidden]-> PAdmin
+  PAdmin -[hidden]-> PAutomation
+}
+
+Guest --> UC_SignUp
+Guest --> UC_Login
+
+AuthUser --> UC_Logout
+AuthUser --> UC_ChangePassword
+AuthUser --> UC_ViewProfile
+AuthUser --> UC_UpdateProfile
+AuthUser --> UC_Referral
+AuthUser --> UC_SearchVehicles
+AuthUser --> UC_ViewVehicle
+AuthUser --> UC_SaveSearch
+AuthUser --> UC_ListSaved
+AuthUser --> UC_DeleteSaved
+AuthUser --> UC_TrackRecent
+AuthUser --> UC_ListRecent
+AuthUser --> UC_VehicleReviews
+AuthUser --> UC_ListAnnouncements
+AuthUser --> UC_ListNotifications
+AuthUser --> UC_MarkRead
+
+User --> UC_CreateBooking
+User --> UC_ListBookings
+User --> UC_GetBooking
+User --> UC_ConfirmBooking
+User --> UC_CancelBooking
+User --> UC_OpenDispute
+User --> UC_Charge
+User --> UC_ListPayments
+User --> UC_GetChecklist
+User --> UC_CreateTripReport
+User --> UC_UploadTripPhotos
+User --> UC_ViewTripReports
+User --> UC_ViewTripReport
+User --> UC_SubmitVerification
+User --> UC_UploadVerificationDocs
+User --> UC_MyVerifications
+User --> UC_ValidateCoupon
+User --> UC_CreateReview
+
+Owner --> UC_CreateVehicle
+Owner --> UC_UpdateVehicle
+Owner --> UC_DeleteVehicle
+Owner --> UC_UploadVehicleImages
+Owner --> UC_ListBookings
+Owner --> UC_GetBooking
+Owner --> UC_ConfirmBooking
+Owner --> UC_CancelBooking
+Owner --> UC_LateReturn
+Owner --> UC_OpenDispute
+Owner --> UC_ListPayments
+Owner --> UC_GetChecklist
+Owner --> UC_CreateTripReport
+Owner --> UC_UploadTripPhotos
+Owner --> UC_ViewTripReports
+Owner --> UC_ViewTripReport
+Owner --> UC_SubmitVerification
+Owner --> UC_UploadVerificationDocs
+Owner --> UC_MyVerifications
+Owner --> UC_OwnerAnalytics
+
+Admin --> UC_ListBookings
+Admin --> UC_GetBooking
+Admin --> UC_ConfirmBooking
+Admin --> UC_CancelBooking
+Admin --> UC_OpenDispute
+Admin --> UC_ResolveDispute
+Admin --> UC_Refund
+Admin --> UC_ListPayments
+Admin --> UC_ListVerifications
+Admin --> UC_ReviewVerification
+Admin --> UC_CreateAnnouncement
+Admin --> UC_DeleteAnnouncement
+Admin --> UC_CreateCoupon
+Admin --> UC_ListCoupons
+Admin --> UC_ToggleCoupon
+Admin --> UC_DeleteCoupon
+Admin --> UC_Analytics
+Admin --> UC_OwnerAnalytics
+Admin --> UC_AdminBookings
+Admin --> UC_AdminCreateBooking
+Admin --> UC_AdminCancelBooking
+Admin --> UC_BulkCancelBookings
+Admin --> UC_ExportBookings
+Admin --> UC_AdminVehicles
+Admin --> UC_ApproveVehicle
+Admin --> UC_RejectVehicle
+Admin --> UC_BulkApproveVehicles
+Admin --> UC_AdminUpdateVehicle
+Admin --> UC_AdminDeleteVehicle
+Admin --> UC_ListUsers
+Admin --> UC_CreateUser
+Admin --> UC_UpdateUser
+Admin --> UC_DeactivateUser
+Admin --> UC_BlacklistUser
+Admin --> UC_UnblacklistUser
+Admin --> UC_ListBlacklist
+Admin --> UC_AuditLogs
+Admin --> UC_GetConfig
+Admin --> UC_UpdateConfig
+Admin --> UC_AdminListPayments
+Admin --> UC_AdminRefund
+Admin --> UC_ListDisputes
+
+System --> UC_ExpireHolds
+System --> UC_ActivateBookings
+System --> UC_CompleteBookings
+System --> UC_ArchiveBookings
+
+UC_ViewVehicle .> UC_BookedRanges : <<include>>
+UC_CreateBooking .> UC_CheckAvailability : <<include>>
+UC_CreateBooking .> UC_FirstTimeDiscount : <<include>>
+UC_CreateBooking .> UC_ApplyCoupon : <<include>>
+UC_CreateAnnouncement .> UC_BroadcastAnnouncement : <<extend>>
+
+@enduml

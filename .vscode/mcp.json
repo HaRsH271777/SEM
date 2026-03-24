@@ -1,0 +1,17 @@
+{
+  "servers": {
+    "rig-copilot-mode": {
+      "command": "node",
+      "args": [
+        "c:\\Users\\dhruv\\.vscode\\extensions\\rigcopilotlabs.rig-copilot-mode-0.0.5\\out\\mcpServer.js",
+        "--workspace",
+        "f:\\SEM"
+      ],
+      "env": {
+        "RIG_OUTPUT_DIR": ".dist-rig",
+        "RIG_PYTHON": "python",
+        "RIG_INTENT": "Refactor safely using repository intelligence and agent verification"
+      }
+    }
+  }
+}

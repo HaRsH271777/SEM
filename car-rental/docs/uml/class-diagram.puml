@@ -1,0 +1,368 @@
+java -jar C:\plantuml\plantuml-1.2026.2.jar -tsvg class-diagram.puml use-case-diagram.puml@startuml
+left to right direction
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam ranksep 90
+skinparam nodesep 50
+hide methods
+
+package "Identity & Access" as PIdentity {
+  class User {
+    +id: string
+    +name: string
+    +email: string
+    +role: UserRole
+    +isVerified: bool
+    +isBlacklisted: bool
+    +referralCode: string
+    +referralCount: int
+    +emergencyContact: map
+  }
+
+  class Referral {
+    +id: string
+    +referrerId: string
+    +refereeId: string
+    +referralCode: string
+    +createdAt: datetime
+  }
+
+  class BlacklistEntry {
+    +id: string
+    +userId: string
+    +reason: string
+    +blacklistedBy: string
+    +createdAt: datetime
+  }
+}
+
+package "Vehicle Domain" as PVehicle {
+  class Vehicle {
+    +id: string
+    +ownerId: string
+    +title: string
+    +description: string
+    +status: VehicleStatus
+    +location: string
+    +approvalMode: string
+    +instantBooking: bool
+    +cancellationPolicy: CancellationPolicy
+    +ownerVerified: bool
+    +insuranceVerified: bool
+    +avgRating: float
+    +totalRatings: int
+    +totalBookings: int
+  }
+
+  class VehicleSpecs {
+    +seats: int
+    +transmission: string
+    +fuel: string
+    +make: string
+    +model: string
+    +year: int
+    +color: string
+    +mileage: float
+  }
+
+  class VehiclePricing {
+    +currency: string
+    +baseRate: float
+    +weekendRate: float
+    +peakSeasonRate: float
+    +minimumDays: int
+    +discounts: map
+    +cleaningFee: float
+    +securityDeposit: float
+    +lateFeePerHour: float
+  }
+
+  class VehicleImage {
+    +url: string
+    +isPrimary: bool
+  }
+
+  class GeoLocation {
+    +lat: float
+    +lng: float
+    +address: string
+  }
+
+  class AvailabilityBlock {
+    +start: datetime
+    +end: datetime
+    +type: AvailabilityBlockType
+  }
+
+  class PeakSeasonRange {
+    +start: string
+    +end: string
+    +label: string
+  }
+
+  class RecentlyViewed {
+    +id: string
+    +userId: string
+    +vehicleId: string
+    +viewedAt: datetime
+  }
+}
+
+package "Booking & Payment" as PBooking {
+  class Booking {
+    +id: string
+    +vehicleId: string
+    +userId: string
+    +ownerId: string
+    +startDate: datetime
+    +endDate: datetime
+    +days: int
+    +status: BookingStatus
+    +idempotencyKey: string
+    +paymentMethod: string
+    +couponCode: string
+    +holdExpiresAt: datetime
+    +refundAmount: float
+    +lateReturnFee: float
+    +tripStartReportId: string
+    +tripEndReportId: string
+  }
+
+  class PriceBreakdown {
+    +days: int
+    +base: float
+    +tax: float
+    +total: float
+    +couponDiscount: float
+    +couponCode: string
+  }
+
+  class FeeItem {
+    +name: string
+    +amount: float
+  }
+
+  class Payment {
+    +id: string
+    +bookingId: string
+    +method: string
+    +amount: float
+    +status: PaymentStatus
+    +transactionRef: string
+    +createdAt: datetime
+  }
+
+  class Coupon {
+    +id: string
+    +code: string
+    +type: CouponType
+    +value: float
+    +minBookingAmount: float
+    +maxDiscount: float
+    +expiresAt: datetime
+    +usageLimit: int
+    +usedCount: int
+    +perUserLimit: int
+    +forFirstTimeOnly: bool
+    +isActive: bool
+    +createdBy: string
+  }
+}
+
+package "Trust, Reviews & Communication" as PTrust {
+  class Review {
+    +id: string
+    +bookingId: string
+    +vehicleId: string
+    +userId: string
+    +rating: int
+    +comment: string
+    +createdAt: datetime
+  }
+
+  class TripReport {
+    +id: string
+    +bookingId: string
+    +reportedBy: string
+    +reportType: TripReportType
+    +odometerReading: float
+    +fuelLevel: string
+    +photos: list
+    +damageDescription: string
+    +extraCharges: float
+    +extraChargesReason: string
+    +createdAt: datetime
+  }
+
+  class ChecklistItem {
+    +label: string
+    +checked: bool
+  }
+
+  class Verification {
+    +id: string
+    +userId: string
+    +vehicleId: string
+    +verificationType: string
+    +documentNumber: string
+    +status: VerificationStatus
+    +documentUrls: list
+    +notes: string
+    +adminNotes: string
+    +reviewedBy: string
+    +reviewedAt: datetime
+  }
+
+  class Notification {
+    +id: string
+    +userId: string
+    +message: string
+    +type: string
+    +read: bool
+    +link: string
+    +announcementId: string
+    +createdAt: datetime
+  }
+
+  class Announcement {
+    +id: string
+    +title: string
+    +message: string
+    +targetRole: string
+    +link: string
+    +expiresAt: datetime
+    +createdBy: string
+    +createdAt: datetime
+  }
+
+  class SavedSearch {
+    +id: string
+    +userId: string
+    +name: string
+    +filters: map
+    +createdAt: datetime
+  }
+
+  class AuditLog {
+    +id: string
+    +actorId: string
+    +action: string
+    +resourceType: string
+    +resourceId: string
+    +payload: map
+    +createdAt: datetime
+  }
+
+  class ConfigEntry {
+    +id: string
+    +key: string
+    +value: any
+    +description: string
+    +updatedBy: string
+    +updatedAt: datetime
+  }
+}
+
+enum UserRole {
+  USER
+  OWNER
+  ADMIN
+}
+
+enum VehicleStatus {
+  ACTIVE
+  PAUSED
+  REMOVED
+}
+
+enum BookingStatus {
+  DRAFT
+  PENDING
+  HELD
+  CONFIRMED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  DISPUTED
+  REFUNDED
+  ARCHIVED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum CancellationPolicy {
+  FLEXIBLE
+  MODERATE
+  STRICT
+  NON_REFUNDABLE
+}
+
+enum AvailabilityBlockType {
+  BLOCKED
+  MAINTENANCE
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
+
+enum TripReportType {
+  PRE_TRIP
+  POST_TRIP
+}
+
+enum VerificationStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+PIdentity -[hidden]-> PVehicle
+PVehicle -[hidden]-> PBooking
+PBooking -[hidden]-> PTrust
+
+User "1" -- "0..*" Vehicle : owns
+User "1" -- "0..*" Booking : creates
+User "1" -- "0..*" Review : writes
+User "1" -- "0..*" Notification : receives
+User "1" -- "0..*" SavedSearch : stores
+User "1" -- "0..*" Verification : submits
+User "1" -- "0..*" TripReport : reports
+User "1" -- "0..*" AuditLog : acts
+User "1" -- "0..*" Announcement : publishes
+User "1" -- "0..1" BlacklistEntry : blacklisted
+
+Referral "0..*" -- "1" User : referrer
+Referral "0..*" -- "1" User : referee
+
+Vehicle "1" *-- "1" VehicleSpecs
+Vehicle "1" *-- "1" VehiclePricing
+Vehicle "1" *-- "0..*" VehicleImage
+Vehicle "1" *-- "0..*" AvailabilityBlock
+Vehicle "1" *-- "0..*" PeakSeasonRange
+Vehicle "1" *-- "0..1" GeoLocation
+Vehicle "1" -- "0..*" Booking
+Vehicle "1" -- "0..*" Review
+
+Booking "1" *-- "1" PriceBreakdown
+PriceBreakdown "1" *-- "0..*" FeeItem
+Booking "1" -- "0..*" Payment
+Booking "1" -- "0..1" Coupon : applies
+Booking "1" -- "0..*" TripReport
+Booking "1" -- "0..1" Review
+
+Verification "0..*" -- "0..1" Vehicle
+Verification "0..*" -- "0..1" User : reviewedBy
+
+Announcement "1" -- "0..*" Notification : broadcasts
+RecentlyViewed "0..*" -- "1" User
+RecentlyViewed "0..*" -- "1" Vehicle
+
+@enduml
