@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 """
+=======
+﻿"""
+>>>>>>> 293f75123c83c0440b222946c43e023724ad9e39
 Comprehensive feature verification test suite for Car Rental Platform.
 Run: pytest tests/test_all_features.py -v --tb=short
 """

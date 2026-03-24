@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import secrets
+=======
+﻿import secrets
+>>>>>>> 293f75123c83c0440b222946c43e023724ad9e39
 from fastapi import APIRouter, HTTPException, Depends
 from app.models import SignupRequest, LoginRequest, TokenResponse, UpdateProfileRequest, utcnow
 from app.auth import hash_password, verify_password, create_access_token, get_current_user

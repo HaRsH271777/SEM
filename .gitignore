@@ -1,3 +1,7 @@
 /.dist
+<<<<<<< HEAD
 /.pytest_cache
 .architectiq/
+=======
+/.pytest_cache
+>>>>>>> 293f75123c83c0440b222946c43e023724ad9e39

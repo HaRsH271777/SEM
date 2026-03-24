@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import math
+=======
+﻿import math
+>>>>>>> 293f75123c83c0440b222946c43e023724ad9e39
 import os
 import uuid
 from datetime import datetime, timezone

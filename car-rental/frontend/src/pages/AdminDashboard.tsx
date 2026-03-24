@@ -106,7 +106,10 @@ function SectionHeader({ title, subtitle, action }: { title: string; subtitle?: 
         <h2 className="text-[15px] font-semibold text-white">{title}</h2>
         {subtitle && <p className="text-[12px] text-[#6b7280] mt-0.5">{subtitle}</p>}
       </div>
+<<<<<<< HEAD
       
+=======
+>>>>>>> 293f75123c83c0440b222946c43e023724ad9e39
       {action}
     </div>
   );
