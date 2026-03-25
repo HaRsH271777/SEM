@@ -1,0 +1,67 @@
+flowchart LR
+		%% ===========================
+		%% Client Zone
+		%% ===========================
+		subgraph C[Client Zone]
+				U[End User Browser\nRenter / Owner / Admin]
+				SPA[React + TypeScript SPA\nBuilt with Vite]
+				U -->|HTTPS requests\nJWT in Authorization header| SPA
+		end
+
+		%% ===========================
+		%% Edge / Delivery Zone
+		%% ===========================
+		subgraph E[Edge and Delivery Zone]
+				NGINX[Nginx\nStatic Asset Server + Reverse Proxy]
+		end
+
+		SPA -->|GET /, JS, CSS, assets| NGINX
+		SPA -->|API calls to /api/*| NGINX
+		SPA -->|File requests to /uploads/*| NGINX
+
+		%% ===========================
+		%% Application Zone
+		%% ===========================
+		subgraph A[Application Zone]
+				API[FastAPI Service\nRouters: auth, vehicles, bookings, payments, admin\nRate limit + CORS + JWT validation]
+				SCH[In-Process Scheduler\nCurrent: asyncio periodic tasks]
+				CELERY[Celery Producer\nTask enqueue layer]
+		end
+
+		NGINX -->|proxy_pass /api/ and /uploads/| API
+		API -->|spawned on startup| SCH
+		API -->|enqueue async jobs future or prod pattern| CELERY
+
+		%% ===========================
+		%% Data and Queue Zone
+		%% ===========================
+		subgraph D[Data and Queue Zone]
+				MDB[(MongoDB\nusers, vehicles, bookings, payments,\nnotifications, audit_logs, config...)]
+				REDIS[(Redis\nBroker/Queue + fast ephemeral state)]
+		end
+
+		API -->|async CRUD via Motor\nindexes + idempotency checks| MDB
+		SCH -->|periodic status transitions\nexpire holds, activate, complete| MDB
+		CELERY -->|publish task messages| REDIS
+
+		%% ===========================
+		%% Worker Zone
+		%% ===========================
+		subgraph W[Background Worker Zone]
+				CW1[Celery Worker 1\nnotifications, payment follow-ups]
+				CW2[Celery Worker 2\nbooking maintenance, reporting]
+				CWB[Celery Beat\nperiodic schedule publisher]
+		end
+
+		REDIS -->|consume queued jobs| CW1
+		REDIS -->|consume queued jobs| CW2
+		CWB -->|publish periodic jobs| REDIS
+		CW1 -->|write side effects| MDB
+		CW2 -->|write side effects| MDB
+
+		%% ===========================
+		%% Observability / Governance
+		%% ===========================
+		API -->|security events + domain actions| AUD[(Audit Logs Collection)]
+		CW1 -->|background audit events| AUD
+		CW2 -->|background audit events| AUD

@@ -1,4 +1,4 @@
-﻿"""Full Admin Portal - analytics, CRUD, bulk ops, config, blacklist, announcements."""
+"""Full Admin Portal - analytics, CRUD, bulk ops, config, blacklist, announcements."""
 import csv
 import io
 import math
@@ -200,12 +200,23 @@ async def get_analytics(
     cancellation_rate = round(period_cancelled / period_bookings * 100, 1) if period_bookings > 0 else 0
 
     return {
-        "summary": {"totalUsers": total_users, "totalOwners": total_owners, "totalVehicles": total_vehicles, "totalBookings": total_bookings},
-        "period": {"range": range, "bookings": period_bookings, "cancelled": period_cancelled, "completed": period_completed, "revenue": period_revenue, "gmv": gmv, "commissionRevenue": period_commission, "conversionRate": conversion_rate, "cancellationRate": cancellation_rate},
-        "monthlyTrend": [{"month": f"{m['_id']['year']}-{str(m['_id']['month']).zfill(2)}", "revenue": m["revenue"], "count": m["count"]} for m in monthly_trend],
+        "totalUsers": total_users,
+        "totalOwners": total_owners,
+        "totalVehicles": total_vehicles,
+        "totalBookings": total_bookings,
+        "range": range,
+        "periodBookings": period_bookings,
+        "cancelledBookings": period_cancelled,
+        "completedBookings": period_completed,
+        "totalRevenue": period_revenue,
+        "gmv": gmv,
+        "commissionRevenue": period_commission,
+        "conversionRate": conversion_rate,
+        "cancellationRate": cancellation_rate,
+        "revenueTrend": [{"date": f"{m['_id']['year']}-{str(m['_id']['month']).zfill(2)}", "revenue": m["revenue"], "count": m["count"]} for m in monthly_trend],
         "topVehicles": top_vehicles,
         "statusDistribution": [{"status": s["_id"], "count": s["count"]} for s in status_dist],
-        "topCities": [{"city": c["_id"], "vehicles": c["count"]} for c in cities_raw],
+        "topCities": [{"city": c["_id"], "bookings": c["count"]} for c in cities_raw],
         "userGrowth": [{"month": f"{g['_id']['year']}-{str(g['_id']['month']).zfill(2)}", "newUsers": g["newUsers"]} for g in user_growth],
         "fraudAlerts": fraud_alerts,
     }
@@ -233,6 +244,12 @@ async def admin_list_bookings(
         b["vehicleId"] = str(b.get("vehicleId", ""))
         b["userId"] = str(b.get("userId", ""))
         b["ownerId"] = str(b.get("ownerId", ""))
+        
+        if ObjectId.is_valid(b["vehicleId"]):
+            v = await vehicles_col.find_one({"_id": ObjectId(b["vehicleId"])}, {"title": 1})
+            if v:
+                b["vehicleTitle"] = v.get("title", "")
+                
         bookings.append(b)
     return {"items": bookings, "total": total, "page": page}
 

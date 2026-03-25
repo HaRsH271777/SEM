@@ -1,0 +1,39 @@
+sequenceDiagram
+	autonumber
+	participant UI as React Client
+	participant API as FastAPI /api/bookings
+	participant AUTH as Auth Dependency
+	participant VEH as Vehicles Collection
+	participant BKG as Bookings Collection
+	participant CPN as Coupons Collection
+	participant NTF as Notifications Collection
+
+	UI->>API: POST /api/bookings (idempotencyKey, vehicleId, startDate, endDate, couponCode)
+	API->>AUTH: get_current_user + token decode
+	AUTH-->>API: user context
+
+	API->>BKG: findOne({idempotencyKey})
+	alt Existing idempotent booking
+		BKG-->>API: existing booking
+		API-->>UI: return existing booking snapshot
+	else New booking
+		API->>VEH: find vehicle by _id
+		VEH-->>API: vehicle document
+
+		API->>VEH: validate manual availability blocks
+		API->>BKG: find overlap (vehicleId + date-range + active-like statuses)
+		alt Overlap exists
+			BKG-->>API: conflicting booking
+			API-->>UI: 409 Vehicle already booked
+		else No overlap
+			API->>CPN: validate coupon (optional)
+			CPN-->>API: coupon decision
+
+			API->>API: calculate price breakdown
+			API->>BKG: insert booking (held/pending)
+			BKG-->>API: inserted _id
+
+			API->>NTF: notify owner about booking request
+			API-->>UI: 201 booking + next steps (pay within hold TTL)
+		end
+	end

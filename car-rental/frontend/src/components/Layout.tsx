@@ -11,6 +11,7 @@ export default function Layout() {
   const { loadUser } = useAuthStore();
   const location = useLocation();
   const isAuthPage = location.pathname.startsWith('/auth');
+  const isAdminPage = location.pathname.startsWith('/admin');
   const blob1 = useRef<HTMLDivElement>(null);
   const blob2 = useRef<HTMLDivElement>(null);
   const blob3 = useRef<HTMLDivElement>(null);
@@ -48,13 +49,13 @@ export default function Layout() {
       </div>
       <ScrollProgress />
       <div className="relative z-10 flex flex-col min-h-screen">
-        {!isAuthPage && <Navbar />}
+        {!isAuthPage && !isAdminPage && <Navbar />}
         <main id="main-content" className="flex-1 flex flex-col">
           <PageTransition>
             <Outlet />
           </PageTransition>
         </main>
-        {!isAuthPage && <Footer />}
+        {!isAuthPage && !isAdminPage && <Footer />}
       </div>
     </div>
   );

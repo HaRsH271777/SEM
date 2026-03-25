@@ -1,0 +1,35 @@
+ID: 69bedc443a0ebdadfa6b0751
+CreatedAt: 2026-04-15 17:58:28.614000
+VehicleID (type): <class 'str'> - 69bedc443a0ebdadfa6b0739
+UserID (type): <class 'str'> - 69bedc413a0ebdadfa6b0718
+OwnerID (type): <class 'str'> - 69bedc3c3a0ebdadfa6b070b
+Status: confirmed
+---
+ID: 69bedc443a0ebdadfa6b0740
+CreatedAt: 2026-04-14 17:58:28.598000
+VehicleID (type): <class 'str'> - 69bedc443a0ebdadfa6b072e
+UserID (type): <class 'str'> - 69bedc403a0ebdadfa6b0715
+OwnerID (type): <class 'str'> - 69bedc3e3a0ebdadfa6b0710
+Status: confirmed
+---
+ID: 69bedc443a0ebdadfa6b0797
+CreatedAt: 2026-04-13 17:58:28.694000
+VehicleID (type): <class 'str'> - 69bedc443a0ebdadfa6b0723
+UserID (type): <class 'str'> - 69bedc423a0ebdadfa6b071b
+OwnerID (type): <class 'str'> - 69bedc3d3a0ebdadfa6b070d
+Status: confirmed
+---
+ID: 69bedc443a0ebdadfa6b0784
+CreatedAt: 2026-04-12 17:58:28.670000
+VehicleID (type): <class 'str'> - 69bedc443a0ebdadfa6b0730
+UserID (type): <class 'str'> - 69bedc433a0ebdadfa6b071d
+OwnerID (type): <class 'str'> - 69bedc3d3a0ebdadfa6b070d
+Status: cancelled
+---
+ID: 69bedc443a0ebdadfa6b074a
+CreatedAt: 2026-04-12 17:58:28.607000
+VehicleID (type): <class 'str'> - 69bedc443a0ebdadfa6b072d
+UserID (type): <class 'str'> - 69bedc403a0ebdadfa6b0714
+OwnerID (type): <class 'str'> - 69bedc3d3a0ebdadfa6b070e
+Status: confirmed
+---

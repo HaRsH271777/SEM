@@ -1,0 +1,22 @@
+sequenceDiagram
+		autonumber
+		participant B as Browser SPA
+		participant N as Nginx
+		participant A as FastAPI
+		participant M as MongoDB
+		participant R as Redis
+		participant W as Celery Worker
+
+		B->>N: POST /api/bookings (JWT + booking payload)
+		N->>A: Proxy request
+		A->>A: Validate token, role, date constraints
+		A->>M: Check overlapping bookings + idempotency key
+		M-->>A: Conflict-safe result
+		A->>M: Insert booking + audit event
+		A-->>N: 201 Created (booking snapshot)
+		N-->>B: Booking response
+
+		A->>R: Enqueue follow-up tasks (notification/expiry)
+		R-->>W: Deliver task message
+		W->>M: Update booking/notification status later
+		W->>M: Append background audit entry

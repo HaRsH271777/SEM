@@ -1,0 +1,153 @@
+erDiagram
+		USERS {
+				ObjectId _id PK
+				string name
+				string email UK
+				string passwordHash
+				string role
+				bool verified
+				bool isVerified
+				bool isBlacklisted
+				string referralCode
+				int referralCount
+				string referredBy
+				object emergencyContact
+				object profile
+				datetime createdAt
+				datetime updatedAt
+		}
+
+		VEHICLES {
+				ObjectId _id PK
+				ObjectId ownerId FK
+				string title
+				string description
+				object[] images
+				object specs
+				object pricing
+				string status
+				string location
+				object geoLocation
+				string approvalMode
+				bool instantBooking
+				string cancellationPolicy
+				object[] peakSeasonRanges
+				object[] availability
+				float avgRating
+				int totalRatings
+				int totalBookings
+				bool ownerVerified
+				bool insuranceVerified
+				datetime createdAt
+				datetime updatedAt
+		}
+
+		BOOKINGS {
+				ObjectId _id PK
+				string vehicleId FK
+				string userId FK
+				string ownerId FK
+				datetime startDate
+				datetime endDate
+				int days
+				object priceBreakdown
+				string status
+				datetime holdExpiresAt
+				string idempotencyKey UK
+				string paymentMethod
+				string couponCode FK
+				string cancellationPolicy
+				string cancelReason
+				float refundAmount
+				float lateReturnFee
+				datetime actualReturnTime
+				string tripStartReportId
+				string tripEndReportId
+				string adminNotes
+				datetime createdAt
+				datetime updatedAt
+		}
+
+		PAYMENTS {
+				ObjectId _id PK
+				string bookingId FK
+				string method
+				float amount
+				string status
+				string transactionRef
+				datetime createdAt
+		}
+
+		REVIEWS {
+				ObjectId _id PK
+				string bookingId FK
+				string vehicleId FK
+				string userId FK
+				int rating
+				string comment
+				datetime createdAt
+		}
+
+		COUPONS {
+				ObjectId _id PK
+				string code UK
+				string type
+				float value
+				float minBookingAmount
+				float maxDiscount
+				datetime expiresAt
+				int usageLimit
+				int usedCount
+				int perUserLimit
+				string description
+				bool forFirstTimeOnly
+				bool isActive
+				string createdBy FK
+				object userUsage
+				datetime createdAt
+				datetime updatedAt
+		}
+
+		NOTIFICATIONS {
+				ObjectId _id PK
+				string userId FK
+				string message
+				string type
+				bool read
+				string link
+				datetime createdAt
+		}
+
+		AUDIT_LOGS {
+				ObjectId _id PK
+				string actorId FK
+				string action
+				string resourceType
+				string resourceId
+				object payload
+				datetime createdAt
+		}
+
+		REFERRALS {
+				ObjectId _id PK
+				string referrerId FK
+				string refereeId FK
+				string referralCode
+				datetime createdAt
+		}
+
+		USERS ||--o{ VEHICLES : owns
+		USERS ||--o{ BOOKINGS : creates
+		USERS ||--o{ REVIEWS : writes
+		USERS ||--o{ NOTIFICATIONS : receives
+		USERS ||--o{ AUDIT_LOGS : performs
+		USERS ||--o{ REFERRALS : refers
+		USERS ||--o{ COUPONS : creates_as_admin
+
+		VEHICLES ||--o{ BOOKINGS : booked_in
+		VEHICLES ||--o{ REVIEWS : rated_by
+
+		BOOKINGS ||--o{ PAYMENTS : charged_or_refunded_by
+		BOOKINGS ||--o| REVIEWS : reviewed_once_semantically
+
+		COUPONS ||--o{ BOOKINGS : applied_to

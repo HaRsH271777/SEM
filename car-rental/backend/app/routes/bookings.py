@@ -1,4 +1,4 @@
-﻿from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends, Query
 from bson import ObjectId
@@ -195,7 +195,12 @@ async def list_bookings(status: Optional[str] = None, page: int = Query(1, ge=1)
     cursor = bookings_col.find(filter_q).sort("createdAt", -1).skip(skip).limit(limit)
     bookings = []
     async for b in cursor:
-        bookings.append(booking_to_out(b))
+        out = booking_to_out(b)
+        if ObjectId.is_valid(out["vehicleId"]):
+            v = await vehicles_col.find_one({"_id": ObjectId(out["vehicleId"])}, {"title": 1})
+            if v:
+                out["vehicle"] = {"title": v.get("title", "")}
+        bookings.append(out)
     return {"items": bookings, "total": total, "page": page}
 
 

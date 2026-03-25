@@ -240,6 +240,11 @@ async def seed_database(
         if status == "held":
             hold_expires = datetime.now(timezone.utc) + timedelta(minutes=random.randint(5, 15))
 
+        # Ensure createdAt is not in the future
+        now_dt = datetime.now(timezone.utc)
+        created_at = min(now_dt, start_date - timedelta(days=random.randint(1, 7)))
+        updated_at = min(now_dt, start_date - timedelta(days=random.randint(0, 1)))
+
         booking_doc = {
             "vehicleId": str(vehicle_ids[vehicle_idx]),
             "userId": str(user_id),
@@ -252,8 +257,8 @@ async def seed_database(
             "holdExpiresAt": hold_expires,
             "idempotencyKey": f"seed_{uuid.uuid4().hex}",
             "paymentMethod": random.choice(["mock_card", "upi", "wallet"]),
-            "createdAt": start_date - timedelta(days=random.randint(1, 7)),
-            "updatedAt": start_date,
+            "createdAt": created_at,
+            "updatedAt": updated_at,
         }
 
         if status == "cancelled":

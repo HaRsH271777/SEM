@@ -1,0 +1,10 @@
+flowchart LR
+		USER[Browser Client] -->|HTTP :3000| FE[Frontend Container\nNginx + SPA]
+
+		FE -->|/api/*, /uploads/* proxy| BE[Backend Container\nFastAPI Uvicorn]
+		BE -->|Motor async driver| MDB[(MongoDB Container)]
+		BE -->|queue/cache calls| R[(Redis Container)]
+
+		BE -. optional task publish .-> R
+		CW[Celery Worker Container\noptional scale-out service] -->|consume jobs| R
+		CW -->|persist side-effects| MDB

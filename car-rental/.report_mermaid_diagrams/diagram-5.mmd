@@ -1,0 +1,22 @@
+flowchart TD
+		ROOT[main.tsx] --> APP[App.tsx]
+		APP --> ROUTER[BrowserRouter]
+		ROUTER --> ROUTES[Routes]
+
+		ROUTES --> LAYOUT[Layout]
+		LAYOUT --> NAV[Navbar]
+		LAYOUT --> OUTLET[PageTransition + Outlet]
+		LAYOUT --> FOOTER[Footer]
+		APP --> MOBILE[MobileBottomNav]
+
+		OUTLET --> LANDING[Landing]
+		OUTLET --> SEARCH[SearchPage]
+		OUTLET --> VEHICLE[VehicleDetails]
+		OUTLET --> AUTH[Login/Signup]
+
+		OUTLET --> PROTECTED[ProtectedRoute]
+		PROTECTED --> PROFILE[ProfilePage]
+		PROTECTED --> NOTIFS[NotificationsPage]
+		PROTECTED --> USERD[UserDashboard]
+		PROTECTED --> OWNERD[OwnerDashboard]
+		PROTECTED --> ADMIND[AdminDashboard]
