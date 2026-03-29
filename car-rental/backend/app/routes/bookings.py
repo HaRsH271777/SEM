@@ -152,12 +152,14 @@ async def create_booking(req: BookingCreateRequest, user: dict = Depends(get_cur
         "holdExpiresAt": hold_expires if initial_status == "held" else None,
         "idempotencyKey": req.idempotencyKey,
         "paymentMethod": req.paymentMethod,
+        "pickupLocation": req.pickupLocation,
         "couponCode": coupon_code,
         "cancellationPolicy": vehicle.get("cancellationPolicy", "moderate"),
         "lateReturnFee": 0.0,
         "createdAt": now,
         "updatedAt": now,
     }
+
 
     result = await bookings_col.insert_one(booking_doc)
     booking_doc["_id"] = result.inserted_id

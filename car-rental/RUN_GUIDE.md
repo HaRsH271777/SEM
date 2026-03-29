@@ -29,3 +29,8 @@ If you haven't installed dependencies yet:
 - **Backend**: `pip install -r backend/requirements.txt`
 - **Frontend**: `npm install`
 - **Database**: `python backend/seed.py` (to generate initial data)
+
+#### Default Credentials (after running seed.py)
+- **Admin**: `admin@carrental.com` / `admin123`
+- **Owner**: `owner1@carrental.com` / `owner123` (up to `owner8`)
+- **User**: `user1@carrental.com` / `user123` (up to `user15`)

@@ -1,11 +1,11 @@
-﻿import math
+import math
 import os
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Query
 from bson import ObjectId
-from app.auth import get_current_user, require_role
+from app.auth import get_optional_user, require_role
 from app.database import vehicles_col, bookings_col, recently_viewed_col
 from app.models import (
     VehicleCreateRequest, VehicleUpdateRequest,
@@ -153,7 +153,7 @@ async def list_vehicles(
 
 
 @router.get("/{vehicle_id}")
-async def get_vehicle(vehicle_id: str, user: dict = Depends(get_current_user)):
+async def get_vehicle(vehicle_id: str, user: Optional[dict] = Depends(get_optional_user)):
     """Get vehicle details with booked ranges. Tracks recently viewed."""
     if not ObjectId.is_valid(vehicle_id):
         raise HTTPException(status_code=400, detail="Invalid vehicle ID")

@@ -10,6 +10,7 @@ from bson import ObjectId
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
+security_optional = HTTPBearer(auto_error=False)
 
 
 def hash_password(password: str) -> str:
@@ -52,6 +53,25 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="User not found")
     user["_id"] = str(user["_id"])
     return user
+
+
+async def get_optional_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_optional),
+) -> Optional[dict]:
+    if not credentials:
+        return None
+    try:
+        payload = decode_token(credentials.credentials)
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+        user = await users_col.find_one({"_id": ObjectId(user_id)})
+        if not user:
+            return None
+        user["_id"] = str(user["_id"])
+        return user
+    except Exception:
+        return None
 
 
 def require_role(*roles):

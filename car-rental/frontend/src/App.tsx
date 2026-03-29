@@ -17,8 +17,10 @@ import OwnerDashboard from './pages/OwnerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProfilePage from './pages/ProfilePage';
 import NotificationsPage from './pages/NotificationsPage';
+import PaymentGateway from './pages/PaymentGateway';
 
 function NotFound() {
+
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
       <h1 className="text-6xl font-display font-bold text-gray-900">404</h1>
@@ -58,9 +60,11 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/payment/:bookingId" element={<PaymentGateway />} />
           </Route>
 
           {/* User */}
+
           <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
             <Route path="/user/dashboard" element={<UserDashboard />} />
           </Route>

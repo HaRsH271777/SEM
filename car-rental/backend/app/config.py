@@ -15,9 +15,10 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
     UPLOAD_DIR: str = "./uploads"
     MAX_IMAGE_SIZE_MB: int = 5
-    HOLD_TTL_MINUTES: int = 15
+    HOLD_TTL_MINUTES: int = 10
     SENTRY_DSN: str = ""
     TAX_PERCENTAGE: float = 18.0
+
     SERVICE_FEE_PERCENTAGE: float = 5.0
     FIRST_TIME_DISCOUNT_PERCENT: float = 10.0
     REFERRAL_DISCOUNT_PERCENT: float = 5.0

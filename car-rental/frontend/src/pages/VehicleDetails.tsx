@@ -14,8 +14,41 @@ import { format, addDays, differenceInDays, isAfter, isBefore, parseISO } from '
 import { customToast } from '../components/CustomToast';
 import { useConfetti } from '../hooks/useConfetti';
 import type { Vehicle, Review } from '../types';
+import PickupMap, { LocationPin } from '../components/PickupMap';
+
+class MapErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: string}> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: '' };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error: error.toString() };
+  }
+  render() {
+    if (this.state.hasError) {
+      return <div className="p-4 bg-red-900 text-white rounded-xl">Map Error: {this.state.error}</div>;
+    }
+    return this.props.children;
+  }
+}
+
+
+
+const LOCATIONS_MAP: Record<string, string[]> = {
+  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik'],
+  'Karnataka': ['Bengaluru', 'Mysuru', 'Hubballi', 'Mangaluru'],
+  'Delhi': ['New Delhi'],
+  'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot'],
+  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai'],
+  'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur'],
+  'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Agra', 'Noida'],
+  'Telangana': ['Hyderabad', 'Warangal'],
+  'West Bengal': ['Kolkata', 'Darjeeling'],
+  'Kerala': ['Kochi', 'Thiruvananthapuram', 'Kozhikode'],
+};
 
 export default function VehicleDetails() {
+
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
@@ -39,10 +72,54 @@ export default function VehicleDetails() {
   // Image gallery
   const [activeImage, setActiveImage] = useState(0);
 
-  const STEPS = ['Select Dates', 'Review Price', 'Payment', 'Confirmation'];
+  // Pick-up Location state
+  const [pickupState, setPickupState] = useState('');
+  const [pickupCity, setPickupCity] = useState('');
+  const [pickupPincode, setPickupPincode] = useState('');
+  const [nearestLocations, setNearestLocations] = useState<LocationPin[]>([]);
+  const [selectedPickupLocation, setSelectedPickupLocation] = useState('');
+  const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]); // Default India
+  const [findingLocations, setFindingLocations] = useState(false);
+
+
+  const STEPS = ['Select Dates', 'Location', 'Payment', 'Confirmation'];
 
   useEffect(() => {
+
     if (!id) return;
+    
+    // Check if returning from payment gateway
+    const urlParams = new URLSearchParams(window.location.search);
+    const confirmedBookingId = urlParams.get('confirmed_booking_id');
+    
+    if (confirmedBookingId) {
+      const loadWithBooking = async () => {
+        setLoading(true);
+        try {
+          const [vehicleRes, reviewsRes, bookingRes] = await Promise.all([
+            vehiclesAPI.get(id),
+            reviewsAPI.getForVehicle(id),
+            bookingsAPI.get(confirmedBookingId),
+          ]);
+          setVehicle(vehicleRes.data);
+          setReviews(reviewsRes.data.reviews);
+          setAvgRating(reviewsRes.data.averageRating);
+          setBooking(bookingRes.data);
+          setBookingStep(3); // Go straight to confirmation
+          fireworks();
+          
+          // Track recently viewed
+          searchAPI.trackView(id).catch(() => {});
+        } catch (err: any) {
+          setError('Failed to load vehicle or booking details');
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadWithBooking();
+      return;
+    }
+
     const load = async () => {
       setLoading(true);
       try {
@@ -118,17 +195,22 @@ export default function VehicleDetails() {
 
     setBookingLoading(true);
     try {
-      const idempotencyKey = `${user?._id}_${vehicle._id}_${startDate}_${endDate}`;
+      // Find the name of the selected location to save
+      const locName = nearestLocations.find(l => l.id === selectedPickupLocation)?.name || selectedPickupLocation;
+      
+      const idempotencyKey = `${user?._id}_${vehicle._id}_${startDate}_${endDate}_${selectedPickupLocation}`;
       const res = await bookingsAPI.create({
         idempotencyKey,
         vehicleId: vehicle._id,
         startDate: new Date(startDate).toISOString(),
         endDate: new Date(endDate).toISOString(),
         paymentMethod,
+        pickupLocation: locName || undefined,
       });
       setBooking(res.data);
       setBookingStep(2); // Move to payment step
       customToast.booking('Booking hold created!');
+
     } catch (err: any) {
       customToast.error(err?.response?.data?.detail || 'Booking failed');
     } finally {
@@ -136,25 +218,9 @@ export default function VehicleDetails() {
     }
   };
 
-  const handlePayment = async () => {
+  const handlePayment = () => {
     if (!booking) return;
-    setBookingLoading(true);
-    try {
-      // Process payment (backend auto-confirms booking on success)
-      await paymentsAPI.charge({
-        bookingId: booking._id,
-        method: paymentMethod,
-        amount: booking.priceBreakdown.total,
-      });
-      setBooking({ ...booking, status: 'confirmed' });
-      setBookingStep(3); // Confirmation step
-      customToast.payment('Payment successful! Booking confirmed.');
-      fireworks();
-    } catch (err: any) {
-      customToast.error(err?.response?.data?.detail || 'Payment failed');
-    } finally {
-      setBookingLoading(false);
-    }
+    navigate(`/payment/${booking._id}`);
   };
 
   if (loading) {
@@ -371,9 +437,10 @@ export default function VehicleDetails() {
               <BookingStepper currentStep={bookingStep} steps={STEPS} />
             )}
 
-            {/* Step 0 & 1: Select Dates */}
-            {bookingStep <= 1 && (
+            {/* Step 0: Select Dates */}
+            {bookingStep === 0 && (
               <div className="space-y-4">
+
                 <div>
                   <label className="label">Pick-up Date</label>
                   <input
@@ -438,19 +505,214 @@ export default function VehicleDetails() {
                       customToast.error('Please select dates');
                       return;
                     }
-                    if (bookingStep === 0) setBookingStep(1);
-                    else handleCreateBooking();
+                    setBookingStep(1); // Move to location step
                   }}
-                  disabled={!startDate || !endDate || bookingLoading}
+                  disabled={!startDate || !endDate}
                   className="btn-primary w-full"
                 >
-                  {bookingStep === 0 ? 'Check Availability' : bookingLoading ? 'Processing...' : 'Reserve Now'}
+                  Continue to Location
                 </button>
               </div>
             )}
 
-            {/* Step 2: Payment */}
+            {/* Step 1: Location */}
+            {bookingStep === 1 && (
+              <div className="space-y-4 animate-fade-in">
+                {!nearestLocations.length ? (
+                  <>
+                    <div>
+                      <label className="label">State</label>
+                      <select
+                        value={pickupState}
+                        onChange={(e) => {
+                          setPickupState(e.target.value);
+                          setPickupCity(''); // Reset city when state changes
+                        }}
+                        className="input-field appearance-none"
+                      >
+                        <option value="" disabled>Select State</option>
+                        {Object.keys(LOCATIONS_MAP).map((state) => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="label">City</label>
+                      <select
+                        value={pickupCity}
+                        onChange={(e) => setPickupCity(e.target.value)}
+                        className="input-field appearance-none"
+                        disabled={!pickupState}
+                      >
+                        <option value="" disabled>Select City</option>
+                        {!!pickupState && LOCATIONS_MAP[pickupState]?.map((city) => (
+                          <option key={city} value={city}>{city}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+
+                      <label className="label">Pincode</label>
+                      <input
+                        type="text"
+                        value={pickupPincode}
+                        onChange={(e) => setPickupPincode(e.target.value)}
+                        placeholder="e.g., 400001"
+                        className="input-field"
+                      />
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (!pickupState || !pickupCity || !pickupPincode) {
+                          customToast.error('Please fill in state, city, and pincode');
+                          return;
+                        }
+                        
+                        setFindingLocations(true);
+                        try {
+                          const query = encodeURIComponent(`${pickupCity}, ${pickupState}, ${pickupPincode}`);
+                          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
+                          const data = await res.json();
+                          
+                          let lat = 20.5937;
+                          let lng = 78.9629;
+
+                          const parseCoordinate = (val: any, fallback: number) => {
+                            const parsed = parseFloat(val);
+                            return isNaN(parsed) ? fallback : parsed;
+                          };
+
+                          if (data && Array.isArray(data) && data.length > 0) {
+                            lat = parseCoordinate(data[0].lat, lat);
+                            lng = parseCoordinate(data[0].lon, lng);
+                          } else {
+                            // Fallback to City name search if full address fails
+                            const fallbackQuery = encodeURIComponent(`${pickupCity}, India`);
+                            const fallbackRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${fallbackQuery}`);
+                            const fallbackData = await fallbackRes.json();
+                            if (fallbackData && Array.isArray(fallbackData) && fallbackData.length > 0) {
+                              lat = parseCoordinate(fallbackData[0].lat, lat);
+                              lng = parseCoordinate(fallbackData[0].lon, lng);
+                            } else {
+                              customToast.error('Could not accurately locate area, falling back to default mapping');
+                            }
+                          }
+                          
+                          if (isNaN(lat) || isNaN(lng)) {
+                            lat = 20.5937;
+                            lng = 78.9629;
+                          }
+
+                          setMapCenter([lat, lng]);
+                          
+                          // Generate 3 mock locations slightly offset from center
+                          const offset = 0.02; // Roughly 2 km offset
+                          setNearestLocations([
+                            { id: `${pickupCity}-downtown`, name: `${pickupCity} Downtown Hub`, lat: lat + (Math.random() * offset - offset/2), lng: lng + (Math.random() * offset - offset/2) },
+                            { id: `${pickupCity}-station`, name: `${pickupCity} Station Branch`, lat: lat + (Math.random() * offset - offset/2), lng: lng + (Math.random() * offset - offset/2) },
+                            { id: `${pickupCity}-airport`, name: `${pickupCity} Airport Dropoff`, lat: lat + (Math.random() * offset - offset/2), lng: lng + (Math.random() * offset - offset/2) },
+                          ]);
+                        } catch (err) {
+                          customToast.error('Error finding locations');
+                        } finally {
+                          setFindingLocations(false);
+                        }
+                      }}
+                      disabled={findingLocations}
+                      className="btn-secondary w-full"
+                    >
+                      {findingLocations ? 'Locating on Map...' : 'Find Nearest Locations'}
+                    </button>
+                    <button
+
+                      onClick={() => setBookingStep(0)}
+                      className="btn-ghost w-full"
+                    >
+                      Back to Dates
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h4 className="font-semibold text-white mb-4">Select a Nearest Hub:</h4>
+                    
+                    {/* Interactive React-Leaflet Map */}
+                    <div className="mb-6 h-[250px] relative z-0">
+                      <MapErrorBoundary>
+                        <PickupMap 
+                          center={mapCenter} 
+                          locations={nearestLocations} 
+                          selectedLocationId={selectedPickupLocation} 
+                          onSelect={(id) => setSelectedPickupLocation(id)} 
+                        />
+                      </MapErrorBoundary>
+                    </div>
+
+                    <div className="space-y-3">
+                      {nearestLocations.map((loc, idx) => {
+                        const isSelected = selectedPickupLocation === loc.id;
+                        return (
+                          <label
+                            key={loc.id}
+                            className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                              isSelected
+                                ? 'border-primary-500 bg-primary-500/10 scale-[1.02] shadow-[0_0_15px_rgba(var(--primary-500),0.2)]' 
+                                : 'border-gray-800 bg-[#1b1b1b] hover:border-gray-600 shadow-sm'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="pickupLocation"
+                              value={loc.name}
+                              checked={isSelected}
+                              onChange={() => setSelectedPickupLocation(loc.id)}
+                              className="sr-only"
+                            />
+                            <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2 ${isSelected ? 'border-primary-500' : 'border-gray-500'}`}>
+                              {isSelected && <div className="w-2.5 h-2.5 bg-primary-500 rounded-full" />}
+                            </div>
+                            <div className="flex-1">
+                              <span className="text-sm font-semibold text-white block mb-0.5">{loc.name}</span>
+                              <span className="text-xs text-gray-400 block flex items-center gap-1">
+                                <MapPin className="w-3 h-3" /> {(Math.random() * 3 + 1).toFixed(1)} km away
+                              </span>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        if (!selectedPickupLocation) {
+                          customToast.error('Please select a pick-up location');
+                          return;
+                        }
+                        handleCreateBooking();
+                      }}
+
+                      disabled={bookingLoading}
+                      className="btn-primary w-full mt-4"
+                    >
+                      {bookingLoading ? 'Processing...' : 'Review & Reserve'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setNearestLocations([]);
+                        setSelectedPickupLocation('');
+                      }}
+                      disabled={bookingLoading}
+                      className="btn-ghost w-full"
+                    >
+                      Change Area
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Step 2: Payment Gateway Redirect */}
             {bookingStep === 2 && booking && (
+
               <div className="space-y-4 animate-fade-in">
                 {/* Hold timer */}
                 {holdTimer !== null && holdTimer > 0 && (
@@ -488,47 +750,29 @@ export default function VehicleDetails() {
                     <div className="flex justify-between font-bold">
                       <span className="text-white">Total</span>
                       <span className="text-lg text-white">₹{booking.priceBreakdown.total.toLocaleString()}</span>
-                  </div>
+                    </div>
                 </div>
 
-                {/* Payment method */}
+                {/* Pickup Location read-only */}
+                {booking.pickupLocation && (
+                  <div className="bg-[#1b1b1b] shadow-sm border border-gray-800 rounded-xl p-4">
+                    <h4 className="text-xs text-gray-400 mb-1">Pick-up Location</h4>
+                    <p className="text-sm font-medium text-white flex items-center gap-2">
+                       <MapPin className="w-4 h-4 text-primary-500" /> {booking.pickupLocation}
+                    </p>
+                  </div>
+                )}
+
+                {/* Payment redirect button */}
                 <div>
-                  <label className="label">Payment Method</label>
-                  <div className="space-y-2">
-                    {[
-                      { value: 'mock_card', label: 'Credit/Debit Card', icon: CreditCard },
-                      { value: 'upi', label: 'UPI', icon: Shield },
-                      { value: 'wallet', label: 'Wallet', icon: Shield },
-                    ].map(({ value, label, icon: Icon }) => (
-                      <label
-                        key={value}
-                        className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${
-                          paymentMethod === value ? 'border-primary-500 bg-primary-500/10' : 'border-gray-800 bg-[#1b1b1b] shadow-sm'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="payment"
-                          value={value}
-                          checked={paymentMethod === value}
-                          onChange={() => setPaymentMethod(value)}
-                          className="sr-only"
-                        />
-                        <Icon className="w-5 h-5 text-gray-400" />
-                        <span className="text-sm font-medium text-white">{label}</span>
-                        {paymentMethod === value && <Check className="w-5 h-5 text-primary-500 ml-auto" />}
-                      </label>
-                    ))}
-                  </div>
+                  <button
+                    onClick={handlePayment}
+                    className="btn-primary w-full"
+                  >
+                    Proceed to Payment Gateway
+                  </button>
+                  <p className="text-xs text-center text-gray-500 mt-3">You will be redirected to securely complete your payment.</p>
                 </div>
-
-                <button
-                  onClick={handlePayment}
-                  disabled={bookingLoading}
-                  className="btn-primary w-full"
-                >
-                  {bookingLoading ? 'Processing payment...' : `Pay ₹${booking.priceBreakdown.total.toLocaleString()}`}
-                </button>
               </div>
             )}
 
@@ -557,8 +801,15 @@ export default function VehicleDetails() {
                       {format(new Date(booking.startDate), 'MMM d')} - {format(new Date(booking.endDate), 'MMM d, yyyy')}
                     </span>
                   </div>
+                  {booking.pickupLocation && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Pick-up Location</span>
+                    <span className="text-white text-right max-w-[60%]">{booking.pickupLocation}</span>
+                  </div>
+                  )}
                 </div>
                 <button
+
                   onClick={() => navigate('/user/dashboard')}
                   className="btn-primary w-full"
                 >
@@ -571,7 +822,7 @@ export default function VehicleDetails() {
             <div className="mt-6 pt-6 border-t border-gray-800 space-y-3">
               {[
                 { icon: Shield, text: 'Free cancellation (48h+)' },
-                { icon: Clock, text: '15-min hold during payment' },
+                { icon: Clock, text: '10-min hold during payment' },
                 { icon: Star, text: 'Verified owner & vehicle' },
               ].map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-center gap-2 text-sm text-gray-400">

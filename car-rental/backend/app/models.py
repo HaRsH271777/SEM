@@ -255,6 +255,7 @@ class BookingCreateRequest(BaseModel):
     priceBreakdown: Optional[PriceBreakdown] = None
     paymentMethod: str = "mock_card"
     couponCode: Optional[str] = None
+    pickupLocation: Optional[str] = None
 
 
 class BookingCancelRequest(BaseModel):
@@ -286,6 +287,7 @@ class BookingOut(BaseModel):
     holdExpiresAt: Optional[datetime] = None
     idempotencyKey: str
     paymentMethod: str = "mock_card"
+    pickupLocation: Optional[str] = None
     cancelReason: Optional[str] = None
     refundAmount: Optional[float] = None
     lateReturnFee: Optional[float] = None

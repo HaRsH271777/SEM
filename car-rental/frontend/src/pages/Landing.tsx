@@ -88,7 +88,10 @@ export default function Landing() {
       {/* ═══════════════════════════════════════════════
           IN-PAGE INTRO SEQUENCE
          ═══════════════════════════════════════════════ */}
-      <div className={`absolute inset-0 z-50 bg-black flex items-center justify-center pointer-events-none transition-opacity duration-[2000ms] ease-in-out ${isIntroComplete ? 'opacity-0' : 'opacity-100'}`}>
+      <div 
+        onClick={() => { if (!isIntroComplete) { setIntroComplete(true); setIntroStep(6); } }}
+        className={`absolute inset-0 z-50 bg-black flex items-center justify-center transition-opacity duration-[2000ms] ease-in-out ${isIntroComplete ? 'opacity-0 pointer-events-none' : 'opacity-100 cursor-pointer'}`}
+      >
           {introStep < 2 && (
             <video
               ref={introVideoRef}
