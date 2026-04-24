@@ -128,7 +128,7 @@ export default function Navbar() {
                   </button>
 
                   {profileOpen && (
-                    <div className="absolute right-0 mt-3 w-56 rounded-xl overflow-hidden animate-scale-in border border-white/10 bg-dark-950/95 backdrop-blur-xl shadow-lg">
+                    <div className="absolute right-0 mt-3 w-56 rounded-xl overflow-hidden animate-scale-in border border-white/20 bg-[#0d0e14]/95 backdrop-blur-2xl shadow-2xl">
                       <div className="p-3 bg-white/5 border-b border-white/10">
                         <p className="text-[13px] font-medium text-white truncate">{user?.name}</p>
                         <p className="text-[11px] text-gray-400 truncate mt-0.5">{user?.email}</p>

@@ -217,31 +217,32 @@ export default function OwnerDashboard() {
     .reduce((acc, b) => acc + (b.priceBreakdown?.total || 0), 0);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-gray-900">Owner Dashboard</h1>
-          <p className="text-gray-600 mt-1">Manage your fleet & bookings</p>
+    <div className="min-h-screen relative w-full pt-24 pb-8 bg-[#0d0e14] text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-white">Owner Dashboard</h1>
+            <p className="text-gray-400 mt-1">Manage your fleet & bookings</p>
+          </div>
+          <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Add Vehicle
+          </button>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Add Vehicle
-        </button>
-      </div>
 
       {/* Stats — speedometer gauges */}
       <ScrollReveal>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <div className="card p-4 flex flex-col items-center">
+          <div className="bg-white/5 border border-white/10 rounded-[32px] p-4 flex flex-col items-center">
             <SpeedometerGauge value={vehicles.length} max={Math.max(vehicles.length, 20)} label="Vehicles" displayValue={String(vehicles.length)} color="#00d4ff" glowColor="#00d4ff" size={110} />
           </div>
-          <div className="card p-4 flex flex-col items-center">
+          <div className="bg-white/5 border border-white/10 rounded-[32px] p-4 flex flex-col items-center">
             <SpeedometerGauge value={bookings.filter((b) => b.status === 'active').length} max={Math.max(bookings.length, 10)} label="Active" displayValue={String(bookings.filter((b) => b.status === 'active').length)} color="#22c55e" glowColor="#22c55e" size={110} />
           </div>
-          <div className="card p-4 flex flex-col items-center">
+          <div className="bg-white/5 border border-white/10 rounded-[32px] p-4 flex flex-col items-center">
             <SpeedometerGauge value={bookings.filter((b) => ['pending', 'held'].includes(b.status)).length} max={Math.max(bookings.length, 10)} label="Pending" displayValue={String(bookings.filter((b) => ['pending', 'held'].includes(b.status)).length)} color="#eab308" glowColor="#eab308" size={110} />
           </div>
-          <div className="card p-4 flex flex-col items-center">
+          <div className="bg-white/5 border border-white/10 rounded-[32px] p-4 flex flex-col items-center">
             <SpeedometerGauge value={totalRevenue} max={Math.max(totalRevenue, 100000)} label="Revenue" displayValue={`₹${(totalRevenue / 1000).toFixed(0)}k`} color="#a855f7" glowColor="#a855f7" size={110} />
           </div>
         </div>
@@ -273,30 +274,30 @@ export default function OwnerDashboard() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {vehicles.map((v) => (
-                <div key={v._id} className="card overflow-hidden">
-                  <div className="h-40 bg-white shadow-sm relative">
+                <div key={v._id} className="bg-white/5 border border-white/10 rounded-[32px] overflow-hidden group hover:bg-white/10 transition-colors">
+                  <div className="h-40 bg-dark-900 border-b border-white/10 relative overflow-hidden">
                     {v.images?.[0] ? (
-                      <img src={v.images[0].url} alt={v.title} className="w-full h-full object-cover" />
+                      <img src={v.images[0].url} alt={v.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center"><Car className="w-8 h-8 text-gray-6000" /></div>
+                      <div className="w-full h-full flex items-center justify-center"><Car className="w-8 h-8 text-gray-400" /></div>
                     )}
                     <div className="absolute top-2 right-2">
                       <StatusBadge status={v.status} />
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900">{v.title}</h3>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-600">
+                    <h3 className="font-semibold text-white group-hover:text-primary-400 transition-colors">{v.title}</h3>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
                       {v.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{v.location}</span>}
                       <span className="flex items-center gap-1"><Users className="w-3 h-3" />{v.specs.seats}</span>
                     </div>
                     <div className="flex items-center justify-between mt-4">
-                      <span className="font-bold text-gray-900">₹{v.pricing.baseRate.toLocaleString()}<span className="text-xs text-gray-600 font-normal">/day</span></span>
+                      <span className="font-bold text-white">₹{v.pricing.baseRate.toLocaleString()}<span className="text-xs text-gray-400 font-normal">/day</span></span>
                       <div className="flex gap-2">
-                        <button onClick={() => openEdit(v)} className="p-2 text-gray-600 hover:text-primary-500 transition-colors" aria-label="Edit">
+                        <button onClick={() => openEdit(v)} className="p-2 text-gray-400 hover:text-primary-400 transition-colors" aria-label="Edit">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDelete(v._id)} className="p-2 text-gray-600 hover:text-red-500 transition-colors" aria-label="Delete">
+                        <button onClick={() => handleDelete(v._id)} className="p-2 text-gray-400 hover:text-red-400 transition-colors" aria-label="Delete">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -319,17 +320,17 @@ export default function OwnerDashboard() {
           ) : (
             <div className="space-y-3">
               {bookings.map((b) => (
-                <div key={b._id} className="card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div key={b._id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 group hover:bg-white/10 transition-colors cursor-pointer">
                   <div>
-                    <h4 className="font-semibold text-gray-900 text-sm">{b.vehicle?.title || 'Vehicle'}</h4>
-                    <p className="text-xs text-gray-600 flex items-center gap-1 mt-1">
+                    <h4 className="font-semibold text-white text-sm group-hover:text-primary-400 transition-colors">{b.vehicle?.title || 'Vehicle'}</h4>
+                    <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
                       <Calendar className="w-3 h-3" />
                       {format(new Date(b.startDate), 'MMM d')} − {format(new Date(b.endDate), 'MMM d, yyyy')}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <StatusBadge status={b.status} />
-                    <span className="text-sm font-bold">₹{b.priceBreakdown?.total?.toLocaleString() || '—'}</span>
+                    <span className="text-sm font-bold text-white group-hover:text-primary-400 transition-colors">₹{b.priceBreakdown?.total?.toLocaleString() || '—'}</span>
                     {['pending', 'held'].includes(b.status) && (
                       <button onClick={() => handleConfirmBooking(b._id)} className="btn-primary text-xs py-1.5 px-3">
                         Confirm
@@ -359,30 +360,30 @@ export default function OwnerDashboard() {
             <>
               {/* KPI Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="card p-4"><p className="text-xs text-gray-600 mb-1">Earnings (after commission)</p><p className="text-2xl font-bold text-gray-600">₹{analytics.ownerEarnings?.toLocaleString() ?? 0}</p></div>
-                <div className="card p-4"><p className="text-xs text-gray-600 mb-1">Occupancy Rate</p><p className="text-2xl font-bold text-green-400">{analytics.occupancyRate ?? 0}%</p></div>
-                <div className="card p-4"><p className="text-xs text-gray-600 mb-1">Cancellation Rate</p><p className="text-2xl font-bold text-red-400">{analytics.cancellationRate ?? 0}%</p></div>
-                <div className="card p-4"><p className="text-xs text-gray-600 mb-1">Monthly Projection</p><p className="text-2xl font-bold text-primary-400">₹{analytics.monthlyProjection?.toLocaleString() ?? 0}</p></div>
+                <div className="bg-white/5 border border-white/10 rounded-[32px] p-4"><p className="text-xs text-gray-400 mb-1">Earnings (after commission)</p><p className="text-2xl font-bold text-white">₹{analytics.ownerEarnings?.toLocaleString() ?? 0}</p></div>
+                <div className="bg-white/5 border border-white/10 rounded-[32px] p-4"><p className="text-xs text-gray-400 mb-1">Occupancy Rate</p><p className="text-2xl font-bold text-green-400">{analytics.occupancyRate ?? 0}%</p></div>
+                <div className="bg-white/5 border border-white/10 rounded-[32px] p-4"><p className="text-xs text-gray-400 mb-1">Cancellation Rate</p><p className="text-2xl font-bold text-red-400">{analytics.cancellationRate ?? 0}%</p></div>
+                <div className="bg-white/5 border border-white/10 rounded-[32px] p-4"><p className="text-xs text-gray-400 mb-1">Monthly Projection</p><p className="text-2xl font-bold text-primary-400">₹{analytics.monthlyProjection?.toLocaleString() ?? 0}</p></div>
               </div>
 
               {/* Revenue Chart */}
               {analytics.monthlyTrend?.length > 0 && (
-                <div className="card p-5">
-                  <h3 className="font-semibold text-gray-600 mb-4">Revenue Trend</h3>
+                <div className="bg-white/5 border border-white/10 rounded-[32px] p-5">
+                  <h3 className="font-semibold text-white mb-4">Revenue Trend</h3>
                   <ResponsiveContainer width="100%" height={240}>
                     <BarChart data={analytics.monthlyTrend}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                      <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} />
-                      <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
-                      <Tooltip contentStyle={{ background: '#1e293b', border: 'none', borderRadius: 8 }} labelStyle={{ color: '#94a3b8' }} />
-                      <Bar dataKey="revenue" fill="#6366f1" radius={[4, 4, 0, 0]} name="Revenue (₹)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" />
+                      <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} />
+                      <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} />
+                      <Tooltip contentStyle={{ background: '#0d0e14', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16 }} labelStyle={{ color: '#ffffff' }} />
+                      <Bar dataKey="revenue" fill="#6366f1" radius={[8, 8, 0, 0]} name="Revenue (₹)" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               )}
 
               {/* Occupancy Donut */}
-              <div className="card p-5 flex items-center gap-8">
+              <div className="bg-white/5 border border-white/10 rounded-[32px] p-5 flex items-center gap-8">
                 <div className="flex-shrink-0">
                   <ResponsiveContainer width={140} height={140}>
                     <PieChart>
@@ -394,9 +395,9 @@ export default function OwnerDashboard() {
                   </ResponsiveContainer>
                 </div>
                 <div>
-                  <p className="text-4xl font-bold text-gray-600">{analytics.occupancyRate ?? 0}%</p>
-                  <p className="text-gray-600 mt-1">Fleet Occupancy</p>
-                  <p className="text-xs text-gray-6000 mt-2">Higher occupancy = more earnings. Target {'>'} 70%</p>
+                  <p className="text-4xl font-bold text-white">{analytics.occupancyRate ?? 0}%</p>
+                  <p className="text-gray-400 mt-1">Fleet Occupancy</p>
+                  <p className="text-xs text-gray-500 mt-2">Higher occupancy = more earnings. Target {'>'} 70%</p>
                 </div>
               </div>
             </>
@@ -408,16 +409,16 @@ export default function OwnerDashboard() {
 
       {/* Vehicle Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={resetForm}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={resetForm}>
           <div
-            className="bg-white shadow-sm  border border-gray-200 rounded-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50 animate-fade-in"
+            className="bg-[#0d0e14] border border-white/10 rounded-[32px] w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/80 animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">
+            <div className="flex items-center justify-between p-6 border-b border-white/10">
+              <h2 className="text-lg font-bold text-white">
                 {editingVehicle ? 'Edit Vehicle' : 'Add New Vehicle'}
               </h2>
-              <button onClick={resetForm} className="text-gray-600 hover:text-dark-600">
+              <button onClick={resetForm} className="text-gray-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -425,21 +426,21 @@ export default function OwnerDashboard() {
               {/* Title & Location */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="label">Vehicle Title *</label>
+                  <label className="label !text-gray-300">Vehicle Title *</label>
                   <input
                     value={form.title}
                     onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-                    className="input-field"
+                    className="input-field !bg-white/5 !border-white/10 !text-white placeholder-gray-500"
                     required
                     placeholder="e.g. Honda City 2023"
                   />
                 </div>
                 <div>
-                  <label className="label">Location *</label>
+                  <label className="label !text-gray-300">Location *</label>
                   <input
                     value={form.location}
                     onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
-                    className="input-field"
+                    className="input-field !bg-white/5 !border-white/10 !text-white placeholder-gray-500"
                     required
                     placeholder="e.g. Mumbai"
                   />
@@ -448,11 +449,11 @@ export default function OwnerDashboard() {
 
               {/* Description */}
               <div>
-                <label className="label">Description</label>
+                <label className="label !text-gray-300">Description</label>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-                  className="input-field min-h-[80px]"
+                  className="input-field min-h-[80px] !bg-white/5 !border-white/10 !text-white placeholder-gray-500"
                   placeholder="Describe your vehicle..."
                 />
               </div>
@@ -460,35 +461,35 @@ export default function OwnerDashboard() {
               {/* Specs */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
-                  <label className="label">Seats</label>
-                  <select value={form.seats} onChange={(e) => setForm((p) => ({ ...p, seats: +e.target.value }))} className="input-field">
+                  <label className="label !text-gray-300">Seats</label>
+                  <select value={form.seats} onChange={(e) => setForm((p) => ({ ...p, seats: +e.target.value }))} className="input-field !bg-[#0d0e14] !border-white/10 !text-white">
                     {[2, 4, 5, 6, 7, 8].map((n) => (
                       <option key={n} value={n}>{n}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="label">Transmission</label>
-                  <select value={form.transmission} onChange={(e) => setForm((p) => ({ ...p, transmission: e.target.value as any }))} className="input-field">
+                  <label className="label !text-gray-300">Transmission</label>
+                  <select value={form.transmission} onChange={(e) => setForm((p) => ({ ...p, transmission: e.target.value as any }))} className="input-field !bg-[#0d0e14] !border-white/10 !text-white">
                     <option value="auto">Automatic</option>
                     <option value="manual">Manual</option>
                   </select>
                 </div>
                 <div>
-                  <label className="label">Fuel</label>
-                  <select value={form.fuel} onChange={(e) => setForm((p) => ({ ...p, fuel: e.target.value }))} className="input-field">
+                  <label className="label !text-gray-300">Fuel</label>
+                  <select value={form.fuel} onChange={(e) => setForm((p) => ({ ...p, fuel: e.target.value }))} className="input-field !bg-[#0d0e14] !border-white/10 !text-white">
                     {['petrol', 'diesel', 'electric', 'hybrid', 'cng'].map((f) => (
                       <option key={f} value={f}>{f.charAt(0).toUpperCase() + f.slice(1)}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="label">Year</label>
+                  <label className="label !text-gray-300">Year</label>
                   <input
                     type="number"
                     value={form.year}
                     onChange={(e) => setForm((p) => ({ ...p, year: +e.target.value }))}
-                    className="input-field"
+                    className="input-field !bg-white/5 !border-white/10 !text-white"
                     min={2000}
                     max={new Date().getFullYear() + 1}
                   />
@@ -498,43 +499,43 @@ export default function OwnerDashboard() {
               {/* Pricing */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
-                  <label className="label">Base Rate ₹/day *</label>
+                  <label className="label !text-gray-300">Base Rate ₹/day *</label>
                   <input
                     type="number"
                     value={form.baseRate}
                     onChange={(e) => setForm((p) => ({ ...p, baseRate: +e.target.value }))}
-                    className="input-field"
+                    className="input-field !bg-white/5 !border-white/10 !text-white"
                     required
                     min={100}
                   />
                 </div>
                 <div>
-                  <label className="label">Weekend ₹/day</label>
+                  <label className="label !text-gray-300">Weekend ₹/day</label>
                   <input
                     type="number"
                     value={form.weekendRate}
                     onChange={(e) => setForm((p) => ({ ...p, weekendRate: +e.target.value }))}
-                    className="input-field"
+                    className="input-field !bg-white/5 !border-white/10 !text-white"
                     min={0}
                   />
                 </div>
                 <div>
-                  <label className="label">Cleaning Fee ₹</label>
+                  <label className="label !text-gray-300">Cleaning Fee ₹</label>
                   <input
                     type="number"
                     value={form.cleaningFee}
                     onChange={(e) => setForm((p) => ({ ...p, cleaningFee: +e.target.value }))}
-                    className="input-field"
+                    className="input-field !bg-white/5 !border-white/10 !text-white"
                     min={0}
                   />
                 </div>
                 <div>
-                  <label className="label">Security Deposit ₹</label>
+                  <label className="label !text-gray-300">Security Deposit ₹</label>
                   <input
                     type="number"
                     value={form.securityDeposit}
                     onChange={(e) => setForm((p) => ({ ...p, securityDeposit: +e.target.value }))}
-                    className="input-field"
+                    className="input-field !bg-white/5 !border-white/10 !text-white"
                     min={0}
                   />
                 </div>
@@ -542,10 +543,10 @@ export default function OwnerDashboard() {
 
               {/* Image upload */}
               <div>
-                <label className="label">Images</label>
-                <label className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-xl p-6 cursor-pointer hover:border-primary-500/40 transition-colors">
-                  <Upload className="w-5 h-5 text-gray-600" />
-                  <span className="text-sm text-gray-600">
+                <label className="label !text-gray-300">Images</label>
+                <label className="flex items-center justify-center gap-2 border-2 border-dashed border-white/20 bg-white/5 rounded-2xl p-6 cursor-pointer hover:border-primary-500/60 hover:bg-white/10 transition-colors">
+                  <Upload className="w-5 h-5 text-gray-400" />
+                  <span className="text-sm text-gray-300">
                     {imageFiles.length > 0 ? `${imageFiles.length} file(s) selected` : 'Click to upload images'}
                   </span>
                   <input
@@ -560,7 +561,7 @@ export default function OwnerDashboard() {
 
               {/* Submit */}
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={resetForm} className="btn-ghost flex-1">Cancel</button>
+                <button type="button" onClick={resetForm} className="btn-ghost flex-1 !text-white hover:!bg-white/10">Cancel</button>
                 <button type="submit" disabled={formLoading} className="btn-primary flex-1">
                   {formLoading ? 'Saving...' : editingVehicle ? 'Update Vehicle' : 'Create Vehicle'}
                 </button>
@@ -569,6 +570,7 @@ export default function OwnerDashboard() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

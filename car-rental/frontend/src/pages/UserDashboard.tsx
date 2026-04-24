@@ -126,26 +126,31 @@ export default function UserDashboard() {
   const canReview = (s: string) => s === 'completed';
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-gray-900">My Bookings</h1>
-        <p className="text-gray-600 mt-1">Welcome back, {user?.name?.split(' ')[0] || 'User'}!</p>
-      </div>
+    <div className="min-h-screen relative w-full pt-24 pb-8 bg-[#0d0e14] text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Header */}
+        <div className="mb-8 p-6 rounded-[32px] bg-white/5 border border-white/10 shadow-sm relative overflow-hidden">
+          <div className="relative z-10">
+            <h1 className="text-4xl font-display font-bold text-white">My Bookings</h1>
+            <p className="text-gray-300 mt-2 text-lg">
+              Welcome back, <span className="text-primary-400 font-medium">{user?.name?.split(' ')[0] || 'User'}</span>!
+            </p>
+          </div>
+        </div>
 
-      {/* Quick stats — speedometer gauges */}
+      {/* Quick stats */}
       <ScrollReveal>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <div className="card p-4 flex flex-col items-center">
+          <div className="bg-white/5 border border-white/10 rounded-[32px] p-4 flex flex-col items-center">
             <SpeedometerGauge value={bookings.length} max={Math.max(bookings.length, 20)} label="Total" displayValue={String(bookings.length)} color="#00d4ff" glowColor="#00d4ff" size={110} />
           </div>
-          <div className="card p-4 flex flex-col items-center">
+          <div className="bg-white/5 border border-white/10 rounded-[32px] p-4 flex flex-col items-center">
             <SpeedometerGauge value={bookings.filter((b) => b.status === 'active').length} max={Math.max(bookings.length, 10)} label="Active" displayValue={String(bookings.filter((b) => b.status === 'active').length)} color="#22c55e" glowColor="#22c55e" size={110} />
           </div>
-          <div className="card p-4 flex flex-col items-center">
+          <div className="bg-white/5 border border-white/10 rounded-[32px] p-4 flex flex-col items-center">
             <SpeedometerGauge value={bookings.filter((b) => ['pending', 'held', 'confirmed'].includes(b.status)).length} max={Math.max(bookings.length, 10)} label="Upcoming" displayValue={String(bookings.filter((b) => ['pending', 'held', 'confirmed'].includes(b.status)).length)} color="#eab308" glowColor="#eab308" size={110} />
           </div>
-          <div className="card p-4 flex flex-col items-center">
+          <div className="bg-white/5 border border-white/10 rounded-[32px] p-4 flex flex-col items-center">
             <SpeedometerGauge value={bookings.filter((b) => b.status === 'completed').length} max={Math.max(bookings.length, 10)} label="Completed" displayValue={String(bookings.filter((b) => b.status === 'completed').length)} color="#a855f7" glowColor="#a855f7" size={110} />
           </div>
         </div>
@@ -176,25 +181,25 @@ export default function UserDashboard() {
           {filteredBookings.map((b) => (
             <div
               key={b._id}
-              className="card p-4 sm:p-6 hover:shadow-elevated transition-shadow cursor-pointer"
+              className="bg-white/5 border border-white/10 rounded-[32px] p-4 sm:p-6 hover:bg-white/10 transition-colors cursor-pointer group"
               onClick={() => setSelectedBooking(b)}
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-20 h-14 rounded-xl bg-white shadow-sm overflow-hidden flex-shrink-0">
+                  <div className="w-20 h-14 rounded-xl bg-dark-900 border border-white/10 overflow-hidden flex-shrink-0">
                     {b.vehicle?.images?.[0]?.url ? (
-                      <img src={b.vehicle.images[0].url} alt="" className="w-full h-full object-cover" />
+                      <img src={b.vehicle.images[0].url} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Car className="w-6 h-6 text-gray-6000" />
+                        <Car className="w-6 h-6 text-gray-400" />
                       </div>
                     )}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">
+                    <h3 className="font-semibold text-white text-sm group-hover:text-primary-400 transition-colors">
                       {b.vehicle?.title || 'Vehicle'}
                     </h3>
-                    <p className="text-xs text-gray-600 mt-0.5 flex items-center gap-1">
+                    <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {format(new Date(b.startDate), 'MMM d')} − {format(new Date(b.endDate), 'MMM d, yyyy')}
                     </p>
@@ -202,10 +207,10 @@ export default function UserDashboard() {
                 </div>
                 <div className="flex items-center gap-4">
                   <StatusBadge status={b.status} />
-                  <span className="text-sm font-bold text-gray-900">
+                  <span className="text-sm font-bold text-white group-hover:text-primary-400 transition-colors">
                     ₹{b.priceBreakdown?.total?.toLocaleString() || '—'}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-gray-600 hidden sm:block" />
+                  <ChevronRight className="w-4 h-4 text-gray-400 hidden sm:block group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </div>
@@ -216,61 +221,61 @@ export default function UserDashboard() {
       {/* Booking Detail Modal */}
       {selectedBooking && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
           onClick={() => setSelectedBooking(null)}
         >
           <div
-            className="bg-white shadow-sm  border border-gray-200 rounded-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50 animate-fade-in"
+            className="bg-[#0d0e14] border border-white/10 rounded-[32px] w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50 animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">Booking Details</h2>
-              <button onClick={() => setSelectedBooking(null)} className="text-gray-600 hover:text-dark-600">
+            <div className="flex items-center justify-between p-6 border-b border-white/10">
+              <h2 className="text-lg font-bold text-white">Booking Details</h2>
+              <button onClick={() => setSelectedBooking(null)} className="text-gray-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Status</span>
+                <span className="text-sm text-gray-400">Status</span>
                 <StatusBadge status={selectedBooking.status} />
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Vehicle</span>
+                <span className="text-sm text-gray-400">Vehicle</span>
                 <Link
                   to={`/vehicle/${selectedBooking.vehicleId}`}
-                  className="text-sm text-primary-400 hover:underline"
+                  className="text-sm text-primary-400 hover:text-primary-300 hover:underline"
                 >
                   {selectedBooking.vehicle?.title || 'View Vehicle'}
                 </Link>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Dates</span>
-                <span className="text-sm text-gray-900">
+                <span className="text-sm text-gray-400">Dates</span>
+                <span className="text-sm text-white">
                   {format(new Date(selectedBooking.startDate), 'MMM d')} − {format(new Date(selectedBooking.endDate), 'MMM d, yyyy')}
                 </span>
               </div>
 
               {/* Price breakdown */}
               {selectedBooking.priceBreakdown && (
-                <div className="bg-white shadow-sm border border-gray-200 rounded-xl p-4 space-y-2">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Base ({selectedBooking.priceBreakdown.days} days)</span>
-                    <span>₹{selectedBooking.priceBreakdown.base.toLocaleString()}</span>
+                    <span className="text-gray-400">Base ({selectedBooking.priceBreakdown.days} days)</span>
+                    <span className="text-white">₹{selectedBooking.priceBreakdown.base.toLocaleString()}</span>
                   </div>
                   {selectedBooking.priceBreakdown.fees?.map((f: any, i: number) => (
                     <div key={i} className="flex justify-between text-sm">
-                      <span className="text-gray-600">{f.name}</span>
-                      <span>₹{Math.abs(f.amount).toLocaleString()}</span>
+                      <span className="text-gray-400">{f.name}</span>
+                      <span className="text-white">₹{Math.abs(f.amount).toLocaleString()}</span>
                     </div>
                   ))}
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax</span>
-                    <span>₹{selectedBooking.priceBreakdown.tax?.toLocaleString()}</span>
+                    <span className="text-gray-400">Tax</span>
+                    <span className="text-white">₹{selectedBooking.priceBreakdown.tax?.toLocaleString()}</span>
                   </div>
-                  <hr className="border-gray-200" />
+                  <hr className="border-white/10" />
                   <div className="flex justify-between font-bold">
-                    <span className="text-gray-900">Total</span>
-                    <span className="text-gray-900">₹{selectedBooking.priceBreakdown.total.toLocaleString()}</span>
+                    <span className="text-white">Total</span>
+                    <span className="text-white">₹{selectedBooking.priceBreakdown.total.toLocaleString()}</span>
                   </div>
                 </div>
               )}
@@ -279,11 +284,11 @@ export default function UserDashboard() {
               <div className="space-y-3 pt-2">
                 {canCancel(selectedBooking.status) && (
                   <div className="space-y-2">
-                    <label className="label">Cancel reason</label>
+                    <label className="label !text-gray-300">Cancel reason</label>
                     <input
                       value={cancelReason}
                       onChange={(e) => setCancelReason(e.target.value)}
-                      className="input-field"
+                      className="input-field !bg-white/5 !border-white/10 !text-white placeholder-gray-500"
                       placeholder="Reason for cancellation"
                     />
                     <button onClick={handleCancel} disabled={actionLoading} className="btn-danger w-full">
@@ -294,11 +299,11 @@ export default function UserDashboard() {
 
                 {canDispute(selectedBooking.status) && !showReview && (
                   <div className="space-y-2">
-                    <label className="label">Dispute reason</label>
+                    <label className="label !text-gray-300">Dispute reason</label>
                     <textarea
                       value={disputeReason}
                       onChange={(e) => setDisputeReason(e.target.value)}
-                      className="input-field min-h-[80px]"
+                      className="input-field min-h-[80px] !bg-white/5 !border-white/10 !text-white placeholder-gray-500"
                       placeholder="Describe your issue"
                     />
                     <button onClick={handleDispute} disabled={actionLoading || !disputeReason.trim()} className="btn-secondary w-full flex items-center justify-center gap-2">
@@ -314,22 +319,22 @@ export default function UserDashboard() {
                         <MessageSquare className="w-4 h-4" /> Leave a Review
                       </button>
                     ) : (
-                      <div className="space-y-3 bg-white shadow-sm border border-gray-200 rounded-xl p-4">
+                      <div className="space-y-3 bg-white/5 border border-white/10 rounded-2xl p-4">
                         <div className="flex gap-1">
                           {Array.from({ length: 5 }).map((_, i) => (
                             <button key={i} onClick={() => setReviewRating(i + 1)}>
-                              <Star className={`w-6 h-6 ${i < reviewRating ? 'text-yellow-500 fill-yellow-500' : 'text-dark-600'}`} />
+                              <Star className={`w-6 h-6 ${i < reviewRating ? 'text-amber-400 fill-amber-400' : 'text-gray-600'}`} />
                             </button>
                           ))}
                         </div>
                         <textarea
                           value={reviewComment}
                           onChange={(e) => setReviewComment(e.target.value)}
-                          className="input-field min-h-[80px]"
+                          className="input-field min-h-[80px] !bg-dark-900 !border-white/10 !text-white placeholder-gray-500"
                           placeholder="Share your experience..."
                         />
                         <div className="flex gap-2">
-                          <button onClick={() => setShowReview(false)} className="btn-ghost flex-1">Cancel</button>
+                          <button onClick={() => setShowReview(false)} className="btn-ghost flex-1 !text-gray-300 hover:!bg-white/10">Cancel</button>
                           <button onClick={handleReview} disabled={actionLoading} className="btn-primary flex-1">
                             {actionLoading ? 'Submitting...' : 'Submit Review'}
                           </button>
@@ -343,6 +348,7 @@ export default function UserDashboard() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

@@ -139,14 +139,14 @@ export default function SpeedometerGauge({
         {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span
-            className="text-xl font-bold text-gray-900 leading-none"
+            className="text-2xl font-bold text-white leading-none"
             style={{ animation: isVisible ? 'countUp 0.6s cubic-bezier(0.16,1,0.3,1) forwards' : 'none' }}
           >
             {displayValue}
           </span>
         </div>
       </div>
-      <span className="text-xs text-gray-600 mt-2 font-medium">{label}</span>
+      <span className="text-xs text-gray-400 mt-2 font-medium tracking-wide uppercase">{label}</span>
     </div>
   );
 }
