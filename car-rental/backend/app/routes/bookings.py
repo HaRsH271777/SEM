@@ -34,6 +34,12 @@ async def check_availability(vehicle_id: str, start: datetime, end: datetime, ex
     for block in vehicle.get("availability", []):
         bs = block["start"] if isinstance(block["start"], datetime) else datetime.fromisoformat(str(block["start"]))
         be = block["end"] if isinstance(block["end"], datetime) else datetime.fromisoformat(str(block["end"]))
+        
+        if bs.tzinfo is None:
+            bs = bs.replace(tzinfo=timezone.utc)
+        if be.tzinfo is None:
+            be = be.replace(tzinfo=timezone.utc)
+            
         if start < be and end > bs:
             raise HTTPException(status_code=409, detail="Vehicle is blocked/maintenance during selected dates")
 
@@ -75,6 +81,12 @@ async def create_booking(req: BookingCreateRequest, user: dict = Depends(get_cur
 
     if not ObjectId.is_valid(req.vehicleId):
         raise HTTPException(status_code=400, detail="Invalid vehicle ID")
+        
+    if req.startDate.tzinfo is None:
+        req.startDate = req.startDate.replace(tzinfo=timezone.utc)
+    if req.endDate.tzinfo is None:
+        req.endDate = req.endDate.replace(tzinfo=timezone.utc)
+        
     if req.startDate > req.endDate:
         raise HTTPException(status_code=400, detail="Start date must be before end date")
 
@@ -88,10 +100,10 @@ async def create_booking(req: BookingCreateRequest, user: dict = Depends(get_cur
 
     # First-time discount
     existing_count = await bookings_col.count_documents({"userId": user["_id"], "status": {"$in": ["confirmed", "active", "completed"]}})
-    discounts = list(pricing.get("discounts", []) or [])
+    discounts = dict(pricing.get("discounts", {}) or {})
     if existing_count == 0:
         first_time_pct = await get_config_value("firstTimeDiscountPercent", settings.FIRST_TIME_DISCOUNT_PERCENT)
-        discounts.append({"label": "First-time discount", "percent": first_time_pct})
+        discounts["first_time"] = first_time_pct / 100.0
 
     # Validate coupon if provided
     coupon_discount = 0.0

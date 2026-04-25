@@ -151,7 +151,6 @@ export default function VehicleDetails() {
       setHoldTimer(diff);
       if (diff <= 0) {
         clearInterval(interval);
-        customToast.error('Hold has expired');
       }
     }, 1000);
     return () => clearInterval(interval);

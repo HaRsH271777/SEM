@@ -59,8 +59,6 @@ export default function PaymentGateway() {
       setHoldTimer(diff);
       if (diff <= 0) {
         clearInterval(interval);
-        customToast.error('Hold has expired. Please restart the booking process.');
-        navigate(`/vehicle/${booking.vehicleId}`);
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -236,7 +234,7 @@ export default function PaymentGateway() {
             <div className="pt-4 border-t border-gray-800/80 mt-8">
               <button
                 type="submit"
-                disabled={processing || holdTimer === 0}
+                disabled={processing}
                 className="btn-primary w-full py-4 text-lg font-bold flex items-center justify-center relative overflow-hidden transition-all hover:scale-[1.02]"
               >
                 <span className={`transition-opacity duration-200 ${processing ? 'opacity-0' : 'opacity-100'}`}>

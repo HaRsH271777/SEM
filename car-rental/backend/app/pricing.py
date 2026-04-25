@@ -72,13 +72,19 @@ def calculate_price(
     else:
         surge_amount = 0.0
 
-    # Apply long-term discounts
+    # Apply discounts
     discount_amount = 0.0
     if discounts:
+        if "first_time" in discounts:
+            discount_amount += round(base_total * discounts["first_time"], 2)
+            
+        long_term_discount = 0.0
         if days >= 30 and "monthly" in discounts:
-            discount_amount = round(base_total * discounts["monthly"], 2)
+            long_term_discount = round(base_total * discounts["monthly"], 2)
         elif days >= 7 and "weekly" in discounts:
-            discount_amount = round(base_total * discounts["weekly"], 2)
+            long_term_discount = round(base_total * discounts["weekly"], 2)
+            
+        discount_amount += long_term_discount
 
     base_after_discount = round(base_total - discount_amount, 2)
 
@@ -97,11 +103,11 @@ def calculate_price(
         fees.append(FeeItem(name="Security Deposit", amount=round(security_deposit, 2)))
 
     if discount_amount > 0:
-        fees.append(FeeItem(name="Long-term Discount", amount=-round(discount_amount, 2)))
+        fees.append(FeeItem(name="Discount", amount=-round(discount_amount, 2)))
 
     subtotal = base_after_discount + sum(
         f.amount for f in fees
-        if f.name not in ("Security Deposit", "Long-term Discount")
+        if f.name not in ("Security Deposit", "Discount")
     )
 
     # Apply coupon discount
