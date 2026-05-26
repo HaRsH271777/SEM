@@ -144,6 +144,8 @@ async def upload_report_photos(
     upload_dir = os.path.join(settings.UPLOAD_DIR, "trip_reports", report_id)
     os.makedirs(upload_dir, exist_ok=True)
 
+    # Production deployments should store uploads in cloud object storage.
+
     new_photos = []
     for file in files:
         if file.content_type not in ("image/jpeg", "image/png", "image/webp"):

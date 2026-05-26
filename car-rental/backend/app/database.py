@@ -54,6 +54,11 @@ async def init_indexes():
     await audit_logs_col.create_index("action")
     await audit_logs_col.create_index("createdAt")
 
+    # Reviews
+    await reviews_col.create_index("vehicleId")
+    await reviews_col.create_index("bookingId")
+    await reviews_col.create_index([("bookingId", 1), ("userId", 1)], unique=True)
+
     # Coupons
     await coupons_col.create_index("code", unique=True)
     await coupons_col.create_index("isActive")
@@ -82,6 +87,9 @@ async def init_indexes():
 
     # Blacklist
     await blacklist_col.create_index("userId", unique=True)
+
+    # Config
+    await config_col.create_index("key", unique=True)
 
     # Config / schema version
     existing = await config_col.find_one({"key": "schemaVersion"})

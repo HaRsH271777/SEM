@@ -286,6 +286,8 @@ async def upload_images(vehicle_id: str, files: List[UploadFile] = File(...), us
     upload_dir = os.path.join(settings.UPLOAD_DIR, vehicle_id)
     os.makedirs(upload_dir, exist_ok=True)
 
+    # Production deployments should store uploads in cloud object storage.
+
     new_images = []
     existing_images = vehicle.get("images", [])
     for i, file in enumerate(files):
